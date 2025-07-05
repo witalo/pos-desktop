@@ -8,6 +8,9 @@ interface Company {
   ruc: string
   email: string
   logo?: string
+  igvPercentage?: number 
+  pdfSize?: string       
+  pdfColor?: string     
 }
 
 interface User {
