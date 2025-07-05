@@ -93,7 +93,7 @@ export default function CompanyLoginPage() {
         // Guardar datos de empresa
         setCompany({
           ...response.company,
-          logo: response.logoBase64
+          logoBase64: response.logoBase64
         })
         
         // Guardar en electron si está disponible

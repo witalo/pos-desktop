@@ -8,6 +8,7 @@ interface Company {
   ruc: string
   email: string
   logo?: string
+  logoBase64?: string
   igvPercentage?: number 
   pdfSize?: string       
   pdfColor?: string     
@@ -19,7 +20,6 @@ interface User {
   email: string
   firstName: string
   lastName: string
-  role: string
 }
 
 interface AuthState {

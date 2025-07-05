@@ -76,6 +76,7 @@ export const COMPANY_LOGIN_MUTATION = `
         email
         phone
         address
+        logoBase64
         igvPercentage
         pdfSize
         pdfColor
@@ -125,7 +126,12 @@ export const companyLogin = async (ruc: string, email: string, password: string)
       message: string
       company?: {
         id: string
-        name: string
+        denomination: string
+        logoBase64: string
+        igvPercentage: number
+        pdfSize: string
+        pdfColor: string
+        isActive: boolean
         ruc: string
         email: string
       }
@@ -151,11 +157,10 @@ export const userLogin = async (username: string, password: string, companyId: s
         email: string
         firstName: string
         lastName: string
-        role: string
       }
       company?: {
         id: string
-        name: string
+        denomination: string
       }
       errors?: string[]
     }
