@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>POS Desktop</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+    }
+    
+    .splash-container {
+      text-align: center;
+      color: white;
+    }
+    
+    .logo {
+      width: 80px;
+      height: 80px;
+      background: white;
+      border-radius: 20px;
+      margin: 0 auto 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+      animation: pulse 2s infinite;
+    }
+    
+    .logo svg {
+      width: 50px;
+      height: 50px;
+      fill: #667eea;
+    }
+    
+    h1 {
+      margin: 0 0 10px;
+      font-size: 24px;
+      font-weight: 600;
+      letter-spacing: -0.5px;
+    }
+    
+    .loading {
+      margin-top: 30px;
+    }
+    
+    .loading-bar {
+      width: 200px;
+      height: 4px;
+      background: rgba(255,255,255,0.2);
+      border-radius: 2px;
+      overflow: hidden;
+      margin: 0 auto;
+    }
+    
+    .loading-progress {
+      height: 100%;
+      background: white;
+      border-radius: 2px;
+      animation: loading 1.5s ease-in-out infinite;
+    }
+    
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.05); }
+      100% { transform: scale(1); }
+    }
+    
+    @keyframes loading {
+      0% { width: 0%; }
+      50% { width: 70%; }
+      100% { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+  <div class="splash-container">
+    <div class="logo">
+      <svg viewBox="0 0 24 24">
+        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
+      </svg>
+    </div>
+    <h1>POS Desktop</h1>
+    <p style="margin: 0; opacity: 0.8; font-size: 14px;">Sistema de Punto de Venta</p>
+    <div class="loading">
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html>
