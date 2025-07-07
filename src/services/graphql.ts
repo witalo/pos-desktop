@@ -139,7 +139,29 @@ export const companyLogin = async (ruc: string, email: string, password: string)
       errors?: string[]
     }
   }>(COMPANY_LOGIN_MUTATION, { ruc, email, password })
-
+  if (data.companyLogin.company && data.companyLogin.company.igvPercentage) {
+    const igvValue = data.companyLogin.company.igvPercentage
+    
+    // Convertir a string primero si no lo es
+    const igvString = String(igvValue)
+    
+    // Buscar el patrón A_18, B_10, etc.
+    if (igvString.indexOf('_') !== -1) {
+      const parts = igvString.split('_')
+      if (parts.length > 1) {
+        const numericPart = parseInt(parts[1], 10)
+        if (!isNaN(numericPart)) {
+          data.companyLogin.company.igvPercentage = numericPart
+        } else {
+          data.companyLogin.company.igvPercentage = 18 // fallback
+        }
+      }
+    } else {
+      // Si no tiene guión bajo, intentar convertir directamente
+      const numericValue = parseInt(igvString, 10)
+      data.companyLogin.company.igvPercentage = isNaN(numericValue) ? 18 : numericValue
+    }
+  }
   return data.companyLogin
 }
 

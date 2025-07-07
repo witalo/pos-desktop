@@ -230,7 +230,7 @@ export default function HomePage() {
                 <p className="text-sm font-medium text-gray-900">
                   {user?.firstName} {user?.lastName}
                 </p>
-                <p className="text-xs text-gray-500">{user?.role}</p>
+                {/* <p className="text-xs text-gray-500">{user?.role}</p> */}
               </div>
             )}
             {sidebarOpen && (

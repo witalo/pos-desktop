@@ -9,7 +9,7 @@ interface Company {
   email: string
   logo?: string
   logoBase64?: string
-  igvPercentage?: number 
+  igvPercentage?: number | 18
   pdfSize?: string       
   pdfColor?: string     
 }
