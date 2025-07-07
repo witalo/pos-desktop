@@ -1,4 +1,4 @@
-﻿// src/pages/sales/POSPage.tsx
+﻿// src/pages/sales/POSPage.tsx - Versión con estilo moderno mejorado
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { 
@@ -549,11 +549,6 @@ export default function POSPage() {
           const existingIndex = prevItems.findIndex(item => item.product.id === searchProducts[0].id)
           
           if (existingIndex >= 0) {
-            // Actualizar cantidad del item existente
-            // const newItems = [...prevItems]
-            // newItems[existingIndex].quantity += 1
-            // updateCartItemTotals(newItems, existingIndex)
-            // return newItems
             // Actualizar cantidad del item existente CREANDO UN NUEVO OBJETO
             const newItems = prevItems.map((item, index) => {
               if (index === existingIndex) {
@@ -765,17 +760,8 @@ export default function POSPage() {
       if (response.createOperation.success) {
         const operation = response.createOperation.operation
         alert(`Venta ${operation.serial}-${operation.number} guardada exitosamente`)
-        
-        // Limpiar todo
-        setCartItems([])
-        setCustomer(null)
-        setCustomerSearch('')
-        setGlobalDiscount(0)
-        setProductSearch('')
-        setBarcodeSearch('')
-        
-        // Volver a enfocar código de barras
-        barcodeRef.current?.focus()
+        // Redirigir a la lista de ventas
+        navigate('/sales')
       } else {
         alert(`Error: ${response.createOperation.message}`)
       }
@@ -790,724 +776,734 @@ export default function POSPage() {
   // Calcular totales
   const totals = calculateTotals()
 
-  // =============================================
-  // RENDERIZADO
-  // =============================================
-  return (
-    <div className="h-screen bg-gray-100 flex flex-col">
-      {/* Header Mejorado */}
-      <div className="bg-gradient-to-r from-blue-600 to-blue-700 text-white px-4 py-2 shadow-lg">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <div className="bg-white/20 p-2 rounded-lg">
-              <ShoppingCart className="w-6 h-6" />
-            </div>
-            <div>
-              <h1 className="text-xl font-bold">Punto de Venta</h1>
-              <p className="text-xs text-blue-200">{company?.name || 'Mi Empresa'}</p>
-            </div>
-          </div>
-          <div className="flex items-center space-x-6 text-sm">
-            <div className="text-right">
-              <p className="font-medium">{user?.firstName} {user?.lastName}</p>
-              <p className="text-xs text-blue-200">Vendedor</p>
-            </div>
-            <div className="h-8 w-px bg-blue-400"></div>
-            <div className="text-right">
-              <p className="font-medium">{new Date().toLocaleDateString('es-PE')}</p>
-              <p className="text-xs text-blue-200 flex items-center">
-                <Clock className="w-3 h-3 mr-1" />
-                {new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
+return (
+ <div className="h-full bg-slate-50 flex flex-col font-['Inter',_'system-ui',_sans-serif]">
+   {/* Header Ultra Moderno */}
+   <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-2.5 shadow-xl">
+     <div className="flex items-center justify-between">
+       <div className="flex items-center space-x-3">
+         <div className="bg-white/10 p-2 rounded-lg backdrop-blur-sm">
+           <ShoppingCart className="w-5 h-5" />
+         </div>
+         <div>
+           <h1 className="text-lg font-bold tracking-tight">Punto de Venta</h1>
+           <p className="text-xs text-slate-300 leading-tight">{company?.denomination || 'Mi Empresa'}</p>
+         </div>
+       </div>
+       <div className="flex items-center space-x-4 text-sm">
+         <div className="text-right">
+           <p className="font-semibold tracking-tight">{user?.firstName} {user?.lastName}</p>
+           <p className="text-xs text-slate-300">Vendedor</p>
+         </div>
+         <div className="h-6 w-px bg-slate-400"></div>
+         <div className="text-right">
+           <p className="font-semibold tracking-tight">{new Date().toLocaleDateString('es-PE')}</p>
+           <p className="text-xs text-slate-300 flex items-center">
+             <Clock className="w-3 h-3 mr-1" />
+             {new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+           </p>
+         </div>
+       </div>
+     </div>
+   </div>
 
-      <div className="flex-1 flex overflow-hidden">
-        {/* Panel Principal */}
-        <div className="flex-1 flex flex-col p-3">
-          
-          {/* Controles Superiores Mejorados */}
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-            <div className="flex items-center space-x-4">
-              {/* Documento y Serie */}
-              <div className="flex items-center space-x-2">
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Documento</label>
-                  <select
-                    ref={documentRef}
-                    value={selectedDocument?.id || ''}
-                    onChange={(e) => {
-                      const doc = documents.find(d => d.id === e.target.value)
-                      setSelectedDocument(doc || null)
-                    }}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {documents.map(doc => (
-                      <option key={doc.id} value={doc.id}>{doc.description}</option>
-                    ))}
-                  </select>
-                </div>
-                
-                <div>
-                  <label className="text-xs text-gray-500 block mb-1">Serie</label>
-                  <select
-                    ref={serialRef}
-                    value={selectedSerial?.id || ''}
-                    onChange={(e) => {
-                      const serial = serials.find(s => s.id === e.target.value)
-                      setSelectedSerial(serial || null)
-                    }}
-                    className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  >
-                    {serials.map(serial => (
-                      <option key={serial.id} value={serial.id}>{serial.serial}</option>
-                    ))}
-                  </select>
-                </div>
-              </div>
-
-              {/* Fecha */}
-              <div>
-                <label className="text-xs text-gray-500 block mb-1">Fecha</label>
-                <input
-                  ref={dateRef}
-                  type="date"
-                  value={emissionDate}
-                  onChange={(e) => setEmissionDate(e.target.value)}
-                  className="px-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                />
-              </div>
-
-              {/* Cliente Mejorado */}
-              <div className="flex-1">
-                <label className="text-xs text-gray-500 block mb-1">Cliente (F2)</label>
-                <div className="relative">
-                  <div className="flex items-center space-x-2">
-                    <div className="relative flex-1">
-                      <input
-                        ref={customerSearchRef}
-                        type="text"
-                        value={customerSearch}
-                        onChange={(e) => {
-                          setCustomerSearch(e.target.value)
-                          searchCustomersAdvanced(e.target.value)
-                        }}
-                        onFocus={() => {
-                          if (customerResults.length > 0) {
-                            setShowCustomerResults(true)
-                          }
-                        }}
-                        onBlur={() => {
-                          setTimeout(() => setShowCustomerResults(false), 200)
-                        }}
-                        placeholder="RUC/DNI o nombre..."
-                        className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      />
-                      <User className="absolute left-2 top-2 w-4 h-4 text-gray-400" />
-                      
-                      {searchingCustomer && (
-                        <Loader2 className="absolute right-2 top-2 w-4 h-4 text-gray-400 animate-spin" />
-                      )}
-                    </div>
-                    
-                    {/* Botón buscar */}
-                    <button
-                      onClick={searchPersonByDocument}
-                      disabled={searchingCustomer || !customerSearch}
-                      className="px-3 py-1.5 bg-blue-600 text-white text-sm rounded-md hover:bg-blue-700 disabled:bg-gray-300 disabled:cursor-not-allowed transition-colors"
-                      title="Buscar por documento exacto"
-                    >
-                      <Search className="w-4 h-4" />
-                    </button>
-                  </div>
-                  
-                  {/* Resultados de clientes - Mejorado */}
-                  {showCustomerResults && customerResults.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-y-auto">
-                      {customerResults.map((person, index) => (
-                        <div
-                          key={person.document}
-                          onClick={() => selectCustomer(person)}
-                          className={`px-3 py-2 cursor-pointer transition-colors ${
-                            index === selectedCustomerIndex 
-                              ? 'bg-blue-50 border-l-4 border-blue-500' 
-                              : 'hover:bg-gray-50 border-l-4 border-transparent'
-                          }`}
-                        >
-                          <div className="font-medium text-sm">{person.fullName}</div>
-                          <div className="text-xs text-gray-500 flex items-center space-x-2">
-                            <span className="font-medium">{person.personType === '6' ? 'RUC' : 'DNI'}:</span>
-                            <span>{person.document}</span>
-                            {person.address && (
-                              <>
-                                <span>•</span>
-                                <span className="truncate">{person.address}</span>
-                              </>
-                            )}
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                  
-                  {/* Cliente seleccionado */}
-                  {customer && (
-                    <div className="absolute -bottom-6 left-0 text-xs text-green-600 flex items-center bg-green-50 px-2 py-1 rounded">
-                      <CheckCircle className="w-3 h-3 mr-1" />
-                      <span className="font-medium">{customer.fullName}</span>
-                      <span className="mx-1">•</span>
-                      <span>{customer.document}</span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Búsqueda de Productos - Mejorada */}
-          <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
-            <div className="grid grid-cols-5 gap-3">
-              {/* Código de Barras - Destacado */}
-              <div className="col-span-1">
-                <label className="text-xs text-gray-500 block mb-1">Scanner (B)</label>
-                <div className="relative">
-                  <input
-                    ref={barcodeRef}
-                    type="text"
-                    value={barcodeSearch}
-                    onChange={(e) => setBarcodeSearch(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') {
-                        e.preventDefault()
-                        searchByBarcode(barcodeSearch)
-                      }
-                    }}
-                    placeholder="Código QR"
-                    className="w-full pl-8 pr-2 py-1.5 text-sm border-2 border-red-400 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50 font-mono"
-                  />
-                  <Barcode className="absolute left-2 top-2 w-4 h-4 text-red-500" />
-                  {searchingProducts && barcodeSearch && (
-                    <Loader2 className="absolute right-2 top-2 w-3 h-3 text-red-500 animate-spin" />
-                  )}
-                </div>
-              </div>
-
-              {/* Búsqueda Manual */}
-              <div className="col-span-4">
-                <label className="text-xs text-gray-500 block mb-1">Buscar Producto (F1)</label>
-                <div className="relative">
-                  <input
-                    ref={productSearchRef}
-                    type="text"
-                    value={productSearch}
-                    onChange={(e) => {
-                      setProductSearch(e.target.value)
-                      searchProducts(e.target.value)
-                    }}
-                    onFocus={() => {
-                      if (productResults.length > 0) {
-                        setShowProductResults(true)
-                      }
-                    }}
-                    onBlur={() => {
-                      setTimeout(() => setShowProductResults(false), 200)
-                    }}
-                    placeholder="Nombre o código del producto..."
-                    className="w-full pl-8 pr-3 py-1.5 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  />
-                  <Search className="absolute left-2 top-2 w-4 h-4 text-gray-400" />
-                  
-                  {searchingProducts && productSearch && (
-                    <Loader2 className="absolute right-2 top-2 w-4 h-4 text-gray-400 animate-spin" />
-                  )}
-                  
-                  {/* Resultados de productos - Mejorados */}
-                  {showProductResults && productResults.length > 0 && (
-                    <div className="absolute z-50 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-80 overflow-y-auto">
-                      {productResults.map((product, index) => (
-                        <div
-                          key={product.id}
-                          onClick={() => selectProduct(product)}
-                          className={`px-3 py-3 cursor-pointer transition-colors ${
-                            index === selectedProductIndex 
-                              ? 'bg-blue-50 border-l-4 border-blue-500' 
-                              : 'hover:bg-gray-50 border-l-4 border-transparent'
-                          }`}
-                        >
-                          <div className="flex justify-between items-start">
-                            <div className="flex-1">
-                              <div className="font-medium text-sm">{product.description}</div>
-                              <div className="text-xs text-gray-500 flex items-center space-x-3 mt-1">
-                                <span className="flex items-center">
-                                  <Hash className="w-3 h-3 mr-1" />
-                                  {product.code}
-                                </span>
-                                <span className="flex items-center">
-                                  <Package className="w-3 h-3 mr-1" />
-                                  Stock: {product.stock}
-                                </span>
-                                <span className="text-blue-600">{product.typeAffectation.name}</span>
-                              </div>
-                            </div>
-                            <div className="text-right ml-4">
-                              <div className="font-bold text-lg text-blue-600">S/ {product.unitPrice.toFixed(2)}</div>
-                              <div className="text-xs text-gray-500">c/IGV</div>
-                            </div>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Tabla de Items - Mejorada */}
-          <div className="flex-1 bg-white rounded-lg shadow-sm overflow-hidden">
-            <div className="overflow-auto h-full">
-              <table className="w-full">
-                <thead className="bg-gray-50 sticky top-0 border-b">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Cant.</th>
-                    <th className="px-4 py-3 text-left text-xs font-medium text-gray-600 uppercase tracking-wider">Descripción</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">P. Unit</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Subtotal</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">IGV</th>
-                    <th className="px-4 py-3 text-right text-xs font-medium text-gray-600 uppercase tracking-wider">Total</th>
-                    <th className="px-4 py-3 text-center text-xs font-medium text-gray-600 uppercase tracking-wider w-16"></th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {cartItems.length === 0 ? (
-                    <tr>
-                      <td colSpan={7} className="px-6 py-20 text-center text-gray-500">
-                        <div className="flex flex-col items-center">
-                          <div className="bg-gray-100 rounded-full p-4 mb-4">
-                            <Package className="w-16 h-16 text-gray-300" />
-                          </div>
-                          <p className="text-lg font-medium">No hay productos agregados</p>
-                          <p className="text-sm mt-2 text-gray-400">Escanee un código QR o busque productos</p>
-                          <div className="flex items-center space-x-4 mt-4">
-                            <div className="flex items-center text-sm text-gray-500">
-                              <kbd className="px-2 py-1 bg-gray-200 rounded text-xs font-semibold">B</kbd>
-                              <span className="ml-2">Escanear</span>
-                            </div>
-                            <div className="flex items-center text-sm text-gray-500">
-                              <kbd className="px-2 py-1 bg-gray-200 rounded text-xs font-semibold">F1</kbd>
-                              <span className="ml-2">Buscar</span>
-                            </div>
-                          </div>
-                        </div>
-                      </td>
-                    </tr>
-                  ) : (
-                    cartItems.map((item, index) => (
-                      <tr key={index} className="hover:bg-gray-50 transition-colors">
-                        <td className="px-4 py-3">
-                          <input
-                            type="number"
-                            value={item.quantity}
-                            onChange={(e) => {
-                              const value = parseInt(e.target.value) || 0
-                              updateItemQuantity(index, value)
-                            }}
-                            onFocus={(e) => e.target.select()}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') {
-                                e.preventDefault()
-                                productSearchRef.current?.focus()
-                              }
-                            }}
-                            className="w-16 px-2 py-1 text-center text-sm border border-gray-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                            min="1"
-                          />
-                        </td>
-                        <td className="px-4 py-3">
-                          <div>
-                            <p className="font-medium text-sm text-gray-900">{item.product.description}</p>
-                            <p className="text-xs text-gray-500 flex items-center mt-1">
-                              <span className="flex items-center">
-                                <Hash className="w-3 h-3 mr-1" />
-                                {item.product.code}
-                              </span>
-                              <span className="mx-2">•</span>
-                              <span className="text-blue-600">{item.product.typeAffectation.name}</span>
-                            </p>
-                          </div>
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm font-medium">
-                          S/ {(item.unitPrice || 0).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm">
-                          S/ {(item.totalValue || 0).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-right text-sm text-gray-600">
-                          S/ {(item.totalIgv || 0).toFixed(2)}
-                        </td>
-                        <td className="px-4 py-3 text-right">
-                          <p className="font-semibold text-sm">S/ {(item.totalAmount || 0).toFixed(2)}</p>
-                        </td>
-                        <td className="px-4 py-3 text-center">
-                          <button
-                            onClick={() => removeItem(index)}
-                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-full transition-colors"
-                            title="Eliminar producto"
-                          >
-                            <Trash2 className="w-4 h-4" />
-                          </button>
-                        </td>
-                      </tr>
-                    ))
-                  )}
-                </tbody>
-                {cartItems.length > 0 && (
-                  <tfoot className="bg-gray-50 border-t">
-                    <tr>
-                      <td colSpan={3} className="px-4 py-3 text-right font-medium text-sm">
-                        Totales:
-                      </td>
-                      <td className="px-4 py-3 text-right font-medium text-sm">
-                        S/ {cartItems.reduce((acc, item) => acc + item.totalValue, 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-right font-medium text-sm">
-                        S/ {cartItems.reduce((acc, item) => acc + item.totalIgv, 0).toFixed(2)}
-                      </td>
-                      <td className="px-4 py-3 text-right font-bold text-sm text-blue-600">
-                        S/ {cartItems.reduce((acc, item) => acc + item.totalAmount, 0).toFixed(2)}
-                      </td>
-                      <td></td>
-                    </tr>
-                  </tfoot>
-                )}
-              </table>
-            </div>
-          </div>
-        </div>
-
-        {/* Panel Lateral - Resumen Mejorado */}
-        <div className="w-80 bg-white shadow-lg flex flex-col">
-          {/* Descuento */}
-          <div className="p-4 border-b bg-gray-50">
-            <h3 className="text-sm font-semibold mb-3 text-gray-700 flex items-center">
-              <Percent className="w-4 h-4 mr-2" />
-              Descuento Global (F3)
-            </h3>
-            <div className="flex items-center space-x-2 mb-2">
-              <button
-                onClick={() => setDiscountType('amount')}
-                className={`flex-1 py-1.5 text-xs rounded-md font-medium transition-colors ${
-                  discountType === 'amount'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                S/ Monto
-              </button>
-              <button
-                onClick={() => setDiscountType('percent')}
-                className={`flex-1 py-1.5 text-xs rounded-md font-medium transition-colors ${
-                  discountType === 'percent'
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
-                }`}
-              >
-                % Porcentaje
-              </button>
-            </div>
-            <input
-              ref={discountInputRef}
-              type="number"
-              value={globalDiscount}
-              onChange={(e) => setGlobalDiscount(Number(e.target.value) || 0)}
-              onFocus={(e) => e.target.select()}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  e.preventDefault()
-                  saveOperation()
-                }
-              }}
-              placeholder={discountType === 'amount' ? '0.00' : '0'}
-              className="w-full px-3 py-2 text-sm border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-
-          {/* Totales */}
-          <div className="flex-1 p-4 space-y-3 text-sm">
-            <h3 className="font-semibold mb-3 text-gray-700 flex items-center">
-              <Calculator className="w-4 h-4 mr-2" />
-              Resumen de Venta
-            </h3>
-            
-            {/* Subtotal */}
-            <div className="flex justify-between pb-2 border-b border-gray-100">
-              <span className="text-gray-600">Subtotal:</span>
-              <span className="font-medium">S/ {(totals.subtotal || 0).toFixed(2)}</span>
-            </div>
-
-            {/* Tipos de operación */}
-            <div className="space-y-1">
-              {totals.totalTaxable > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Op. Gravada:</span>
-                  <span className="text-gray-600">S/ {(totals.totalTaxable || 0).toFixed(2)}</span>
-                </div>
-              )}
-              {totals.totalExempt > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Op. Exonerada:</span>
-                  <span className="text-gray-600">S/ {(totals.totalExempt || 0).toFixed(2)}</span>
-                </div>
-              )}
-              {totals.totalUnaffected > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Op. Inafecta:</span>
-                  <span className="text-gray-600">S/ {(totals.totalUnaffected || 0).toFixed(2)}</span>
-                </div>
-              )}
-              {totals.totalFree > 0 && (
-                <div className="flex justify-between text-xs">
-                  <span className="text-gray-500">Op. Gratuita:</span>
-                  <span className="text-gray-600">S/ {(totals.totalFree || 0).toFixed(2)}</span>
-                </div>
-              )}
-            </div>
-
-            {/* IGV */}
-            <div className="flex justify-between pt-2 border-t border-gray-100">
-              <span className="text-gray-600">IGV ({igvPercent}%):</span>
-              <span className="font-medium">S/ {(totals.totalIgv || 0).toFixed(2)}</span>
-            </div>
-
-            {/* Descuento */}
-            {totals.discountAmount > 0 && (
-              <div className="flex justify-between text-red-600 bg-red-50 px-2 py-1 rounded">
-                <span className="font-medium">Descuento:</span>
-                <span className="font-medium">- S/ {(totals.discountAmount || 0).toFixed(2)}</span>
-              </div>
-            )}
-
-            {/* Total */}
-            <div className="flex justify-between pt-4 border-t-2 border-gray-200 text-xl font-bold">
-              <span>TOTAL:</span>
-              <span className="text-blue-600">S/ {(totals.totalAmount || 0).toFixed(2)}</span>
-            </div>
-
-            {/* Información adicional */}
-            <div className="mt-4 p-3 bg-blue-50 rounded-md">
-              <div className="text-xs text-blue-700 space-y-1">
-                <div className="flex items-center">
-                  <span className="font-medium">Items:</span>
-                  <span className="ml-2">{cartItems.length}</span>
-                </div>
-                <div className="flex items-center">
-                  <span className="font-medium">Unidades:</span>
-                  <span className="ml-2">{cartItems.reduce((acc, item) => acc + item.quantity, 0)}</span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Botones */}
-          <div className="p-4 border-t space-y-2">
-            <button
-              onClick={saveOperation}
-              disabled={processing || cartItems.length === 0 || !customer}
-              className={`w-full py-3 font-semibold rounded-lg transition-all flex items-center justify-center ${
-                processing || cartItems.length === 0 || !customer
-                  ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                  : 'bg-gradient-to-r from-green-600 to-green-700 hover:from-green-700 hover:to-green-800 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
-              }`}
-            >
-              {processing ? (
-                <>
-                  <Loader2 className="w-5 h-5 mr-2 animate-spin" />
-                  Procesando...
-                </>
-              ) : (
-                <>
-                  <CreditCard className="w-5 h-5 mr-2" />
-                  Procesar Venta (F12)
-                </>
-              )}
-            </button>
-
-            <button
-              onClick={() => {
-                if (cartItems.length > 0 && confirm('¿Está seguro de cancelar la venta actual?')) {
-                  setCartItems([])
-                  setCustomer(null)
-                  setCustomerSearch('')
-                  setGlobalDiscount(0)
-                  barcodeRef.current?.focus()
-                }
-              }}
-              className="w-full py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-medium"
-            >
-              Cancelar Venta
-            </button>
-          </div>
-
-          {/* Atajos */}
-          <div className="p-3 bg-gray-50 text-xs text-gray-600 space-y-1 border-t">
-            <div className="font-semibold mb-2 text-gray-700">Atajos de Teclado:</div>
-            <div className="grid grid-cols-2 gap-x-3 gap-y-1">
-              <div className="flex items-center">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">B</kbd>
-                <span className="ml-2">Scanner</span>
-              </div>
-              <div className="flex items-center">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">F1</kbd>
-                <span className="ml-2">Productos</span>
-              </div>
-              <div className="flex items-center">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">F2</kbd>
-                <span className="ml-2">Cliente</span>
-              </div>
-              <div className="flex items-center">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">F3</kbd>
-                <span className="ml-2">Descuento</span>
-              </div>
-              <div className="col-span-2 flex items-center mt-1">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">F12</kbd>
-                <span className="ml-2">Procesar Venta</span>
-              </div>
-              <div className="col-span-2 flex items-center">
-                <kbd className="px-1.5 py-0.5 bg-white border border-gray-300 rounded text-xs font-mono">ESC</kbd>
-                <span className="ml-2">Cerrar listas</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Diálogo de Producto - Mejorado */}
-      {showProductDialog && editingProduct && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full shadow-2xl">
-           <div className="flex items-center justify-between mb-4">
-             <h3 className="text-xl font-semibold">Agregar Producto</h3>
-             <button
-               onClick={() => {
-                 setShowProductDialog(false)
-                 setEditingProduct(null)
-                 productSearchRef.current?.focus()
-               }}
-               className="text-gray-400 hover:text-gray-600 transition-colors"
-             >
-               <X className="w-5 h-5" />
-             </button>
-           </div>
-           
-           <div className="mb-4 p-3 bg-gray-50 rounded-md">
-             <p className="font-medium text-gray-900">{editingProduct.product.description}</p>
-             <div className="flex items-center space-x-3 text-sm text-gray-600 mt-1">
-               <span className="flex items-center">
-                 <Hash className="w-3 h-3 mr-1" />
-                 {editingProduct.product.code}
-               </span>
-               <span className="flex items-center">
-                 <Package className="w-3 h-3 mr-1" />
-                 Stock: {editingProduct.product.stock}
-               </span>
-             </div>
-             <p className="text-sm text-blue-600 mt-1">
-               {editingProduct.product.typeAffectation.name}
-             </p>
-           </div>
-           
-           <div className="space-y-4">
+   <div className="flex-1 flex overflow-hidden">
+     {/* Panel Principal */}
+     <div className="flex-1 flex flex-col p-3">
+       
+       {/* Controles Superiores Ultra Compactos */}
+       <div className="bg-white rounded-lg shadow-sm p-3 mb-3 border border-slate-200">
+         <div className="flex items-center space-x-3">
+           {/* Documento y Serie */}
+           <div className="flex items-center space-x-2">
              <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1">
-                 Cantidad
-               </label>
-               <input
-                 ref={quantityDialogRef}
-                 type="number"
-                 value={editingProduct.quantity}
-                 onChange={(e) => setEditingProduct({
-                   ...editingProduct,
-                   quantity: Math.max(1, parseInt(e.target.value) || 1)
-                 })}
-                 onFocus={(e) => e.target.select()}
-                 onKeyDown={(e) => {
-                   if (e.key === 'Enter') {
-                     e.preventDefault()
-                     priceDialogRef.current?.select()
-                   }
+               <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Documento</label>
+               <select
+                 ref={documentRef}
+                 value={selectedDocument?.id || ''}
+                 onChange={(e) => {
+                   const doc = documents.find(d => d.id === e.target.value)
+                   setSelectedDocument(doc || null)
                  }}
-                 min={1}
-                 max={editingProduct.product.stock}
-                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-               />
+                 className="px-2 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
+               >
+                 {documents.map(doc => (
+                   <option key={doc.id} value={doc.id}>{doc.description}</option>
+                 ))}
+               </select>
              </div>
              
              <div>
-               <label className="block text-sm font-medium text-gray-700 mb-1">
-                 Precio con IGV
-               </label>
-               <div className="relative">
-                 <span className="absolute left-3 top-2 text-gray-500">S/</span>
-                 <input
-                   ref={priceDialogRef}
-                   type="number"
-                   value={editingProduct.unitPrice}
-                   onChange={(e) => setEditingProduct({
-                     ...editingProduct,
-                     unitPrice: Math.max(0, parseFloat(e.target.value) || 0)
-                   })}
-                   onFocus={(e) => e.target.select()}
-                   onKeyDown={(e) => {
-                     if (e.key === 'Enter') {
-                       e.preventDefault()
-                       addProductFromDialog()
-                     }
-                   }}
-                   step="0.01"
-                   className="w-full pl-8 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                 />
-               </div>
-             </div>
-             
-             <div className="bg-blue-50 p-3 rounded-lg space-y-2">
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-600">Precio sin IGV:</span>
-                 <span className="font-medium">S/ {calculateUnitValue(editingProduct.unitPrice).toFixed(2)}</span>
-               </div>
-               <div className="flex justify-between text-sm">
-                 <span className="text-gray-600">IGV ({igvPercent}%):</span>
-                 <span className="font-medium">S/ {(editingProduct.unitPrice - calculateUnitValue(editingProduct.unitPrice)).toFixed(2)}</span>
-               </div>
-               <div className="flex justify-between text-base font-bold pt-2 border-t border-blue-100">
-                 <span>Total:</span>
-                 <span className="text-blue-600">S/ {(editingProduct.quantity * editingProduct.unitPrice).toFixed(2)}</span>
-               </div>
-             </div>
-             
-             <div className="flex justify-end space-x-2 pt-4">
-               <button
-                 onClick={() => {
-                   setShowProductDialog(false)
-                   setEditingProduct(null)
-                   productSearchRef.current?.focus()
+               <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Serie</label>
+               <select
+                 ref={serialRef}
+                 value={selectedSerial?.id || ''}
+                 onChange={(e) => {
+                   const serial = serials.find(s => s.id === e.target.value)
+                   setSelectedSerial(serial || null)
                  }}
-                 className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors font-medium"
+                 className="px-2 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-medium"
                >
-                 Cancelar (ESC)
-               </button>
-               <button
-                 onClick={addProductFromDialog}
-                 className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-medium"
-               >
-                 Agregar (Enter)
-               </button>
+                 {serials.map(serial => (
+                   <option key={serial.id} value={serial.id}>{serial.serial}</option>
+                 ))}
+               </select>
+             </div>
+           </div>
+
+           {/* Fecha */}
+           <div>
+             <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Fecha</label>
+             <input
+               ref={dateRef}
+               type="date"
+               value={emissionDate}
+               onChange={(e) => setEmissionDate(e.target.value)}
+               className="px-2 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono"
+             />
+           </div>
+
+           {/* Cliente Ultra Mejorado */}
+           <div className="flex-1">
+             <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Cliente (F2)</label>
+             <div className="relative">
+               <div className="flex items-center space-x-2">
+                 <div className="relative flex-1">
+                   <input
+                     ref={customerSearchRef}
+                     type="text"
+                     value={customerSearch}
+                     onChange={(e) => {
+                       setCustomerSearch(e.target.value)
+                       searchCustomersAdvanced(e.target.value)
+                     }}
+                     onFocus={() => {
+                       if (customerResults.length > 0) {
+                         setShowCustomerResults(true)
+                       }
+                     }}
+                     onBlur={() => {
+                       setTimeout(() => setShowCustomerResults(false), 200)
+                     }}
+                     placeholder="RUC/DNI o nombre..."
+                     className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent tracking-tight"
+                   />
+                   <User className="absolute left-2 top-2 w-3 h-3 text-slate-400" />
+                   
+                   {searchingCustomer && (
+                     <Loader2 className="absolute right-2 top-2 w-3 h-3 text-slate-400 animate-spin" />
+                   )}
+                 </div>
+                 
+                 {/* Botón buscar */}
+                 <button
+                   onClick={searchPersonByDocument}
+                   disabled={searchingCustomer || !customerSearch}
+                   className="px-2 py-1.5 bg-blue-600 text-white text-xs rounded-md hover:bg-blue-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-medium"
+                   title="Buscar por documento exacto"
+                 >
+                   <Search className="w-3 h-3" />
+                 </button>
+               </div>
+               
+               {/* Resultados de clientes - Ultra Mejorado */}
+               {showCustomerResults && customerResults.length > 0 && (
+                 <div className="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                   {customerResults.map((person, index) => (
+                     <div
+                       key={person.document}
+                       onClick={() => selectCustomer(person)}
+                       className={`px-3 py-2 cursor-pointer transition-all ${
+                         index === selectedCustomerIndex 
+                           ? 'bg-blue-50 border-l-4 border-blue-500' 
+                           : 'hover:bg-slate-50 border-l-4 border-transparent'
+                       }`}
+                     >
+                       <div className="font-semibold text-xs tracking-tight">{person.fullName}</div>
+                       <div className="text-xs text-slate-500 flex items-center space-x-2 mt-0.5 font-mono">
+                         <span className="font-medium">{person.personType === '6' ? 'RUC' : 'DNI'}:</span>
+                         <span>{person.document}</span>
+                         {person.address && (
+                           <>
+                             <span>•</span>
+                             <span className="truncate">{person.address}</span>
+                           </>
+                         )}
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+               
+               {/* Cliente seleccionado */}
+               {customer && (
+                 <div className="absolute -bottom-5 left-0 text-xs text-emerald-600 flex items-center bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                   <CheckCircle className="w-3 h-3 mr-1" />
+                   <span className="font-semibold tracking-tight">{customer.fullName}</span>
+                   <span className="mx-1">•</span>
+                   <span className="font-mono">{customer.document}</span>
+                 </div>
+               )}
              </div>
            </div>
          </div>
        </div>
-     )}
+
+       {/* Búsqueda de Productos Ultra Mejorada */}
+       <div className="bg-white rounded-lg shadow-sm p-3 mb-3 border border-slate-200">
+         <div className="grid grid-cols-5 gap-3">
+           {/* Código de Barras Ultra Destacado */}
+           <div className="col-span-1">
+             <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Scanner (B)</label>
+             <div className="relative">
+               <input
+                 ref={barcodeRef}
+                 type="text"
+                 value={barcodeSearch}
+                 onChange={(e) => setBarcodeSearch(e.target.value)}
+                 onKeyDown={(e) => {
+                   if (e.key === 'Enter') {
+                     e.preventDefault()
+                     searchByBarcode(barcodeSearch)
+                   }
+                 }}
+                 placeholder="Código QR"
+                 className="w-full pl-7 pr-2 py-1.5 text-xs border-2 border-red-400 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50 font-mono tracking-wider"
+               />
+               <Barcode className="absolute left-2 top-2 w-3 h-3 text-red-500" />
+               {searchingProducts && barcodeSearch && (
+                 <Loader2 className="absolute right-2 top-2 w-3 h-3 text-red-500 animate-spin" />
+               )}
+             </div>
+           </div>
+
+           {/* Búsqueda Manual Ultra Mejorada */}
+           <div className="col-span-4">
+             <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Buscar Producto (F1)</label>
+             <div className="relative">
+               <input
+                 ref={productSearchRef}
+                 type="text"
+                 value={productSearch}
+                 onChange={(e) => {
+                   setProductSearch(e.target.value)
+                   searchProducts(e.target.value)
+                 }}
+                 onFocus={() => {
+                   if (productResults.length > 0) {
+                     setShowProductResults(true)
+                   }
+                 }}
+                 onBlur={() => {
+                   setTimeout(() => setShowProductResults(false), 200)
+                 }}
+                 placeholder="Nombre o código del producto..."
+                 className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-transparent tracking-tight"
+               />
+               <Search className="absolute left-2 top-2 w-3 h-3 text-slate-400" />
+               
+               {searchingProducts && productSearch && (
+                 <Loader2 className="absolute right-2 top-2 w-3 h-3 text-slate-400 animate-spin" />
+               )}
+               
+               {/* Resultados de productos Ultra Mejorados */}
+               {showProductResults && productResults.length > 0 && (
+                 <div className="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-xl max-h-80 overflow-y-auto">
+                   {productResults.map((product, index) => (
+                     <div
+                       key={product.id}
+                       onClick={() => selectProduct(product)}
+                       className={`px-3 py-2.5 cursor-pointer transition-all ${
+                         index === selectedProductIndex 
+                           ? 'bg-blue-50 border-l-4 border-blue-500' 
+                           : 'hover:bg-slate-50 border-l-4 border-transparent'
+                       }`}
+                     >
+                       <div className="flex justify-between items-start">
+                         <div className="flex-1">
+                           <div className="font-semibold text-xs tracking-tight">{product.description}</div>
+                           <div className="text-xs text-slate-500 flex items-center space-x-3 mt-1">
+                             <span className="flex items-center font-mono">
+                               <Hash className="w-3 h-3 mr-1" />
+                               {product.code}
+                             </span>
+                             <span className="flex items-center">
+                               <Package className="w-3 h-3 mr-1" />
+                               Stock: {product.stock}
+                             </span>
+                             <span className="text-blue-600 font-medium">{product.typeAffectation.name}</span>
+                           </div>
+                         </div>
+                         <div className="text-right ml-4">
+                           <div className="font-bold text-sm text-blue-600 font-mono">S/ {product.unitPrice.toFixed(2)}</div>
+                           <div className="text-xs text-slate-500">c/IGV</div>
+                         </div>
+                       </div>
+                     </div>
+                   ))}
+                 </div>
+               )}
+             </div>
+           </div>
+         </div>
+       </div>
+
+       {/* Tabla de Items Ultra Moderna */}
+       <div className="flex-1 bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200">
+         <div className="overflow-auto h-full">
+           <table className="w-full text-xs">
+             <thead>
+               <tr className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
+                 <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Cant.</th>
+                 <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Descripción</th>
+                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">P. Unit</th>
+                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Subtotal</th>
+                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">IGV</th>
+                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Total</th>
+                 <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase tracking-wider w-12"></th>
+               </tr>
+             </thead>
+             <tbody className="divide-y divide-slate-100">
+               {cartItems.length === 0 ? (
+                 <tr>
+                   <td colSpan={7} className="px-6 py-16 text-center text-slate-500">
+                     <div className="flex flex-col items-center">
+                       <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-full p-4 mb-4">
+                         <Package className="w-12 h-12 text-slate-400" />
+                       </div>
+                       <p className="text-base font-semibold tracking-tight">No hay productos agregados</p>
+                       <p className="text-xs mt-2 text-slate-400">Escanee un código QR o busque productos</p>
+                       <div className="flex items-center space-x-4 mt-4">
+                         <div className="flex items-center text-xs text-slate-500">
+                           <kbd className="px-2 py-1 bg-slate-200 rounded text-xs font-mono font-semibold">B</kbd>
+                           <span className="ml-2 font-medium">Escanear</span>
+                         </div>
+                         <div className="flex items-center text-xs text-slate-500">
+                           <kbd className="px-2 py-1 bg-slate-200 rounded text-xs font-mono font-semibold">F1</kbd>
+                           <span className="ml-2 font-medium">Buscar</span>
+                         </div>
+                       </div>
+                     </div>
+                   </td>
+                 </tr>
+               ) : (
+                 cartItems.map((item, index) => (
+                   <tr 
+                     key={index} 
+                     className={`hover:bg-gradient-to-r hover:from-slate-50 hover:to-blue-50/30 transition-all duration-200 ${
+                       index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+                     }`}
+                   >
+                     <td className="px-3 py-2">
+                       <input
+                         type="number"
+                         value={item.quantity}
+                         onChange={(e) => {
+                           const value = parseInt(e.target.value) || 0
+                           updateItemQuantity(index, value)
+                         }}
+                         onFocus={(e) => e.target.select()}
+                         onKeyDown={(e) => {
+                           if (e.key === 'Enter') {
+                             e.preventDefault()
+                             productSearchRef.current?.focus()
+                           }
+                         }}
+                         className="w-14 px-2 py-1 text-center text-xs border border-slate-300 rounded focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono font-semibold"
+                         min="1"
+                       />
+                     </td>
+                     <td className="px-3 py-2">
+                       <div>
+                         <p className="font-semibold text-xs text-slate-900 tracking-tight leading-tight">{item.product.description}</p>
+                         <p className="text-xs text-slate-500 flex items-center mt-0.5">
+                           <span className="flex items-center font-mono">
+                             <Hash className="w-2.5 h-2.5 mr-1" />
+                             {item.product.code}
+                           </span>
+                           <span className="mx-2">•</span>
+                           <span className="text-blue-600 font-medium">{item.product.typeAffectation.name}</span>
+                         </p>
+                       </div>
+                     </td>
+                     <td className="px-3 py-2 text-right">
+                       <span className="font-semibold text-xs font-mono tracking-tight">
+                         S/ {(item.unitPrice || 0).toFixed(2)}
+                       </span>
+                     </td>
+                     <td className="px-3 py-2 text-right">
+                       <span className="font-medium text-xs font-mono tracking-tight">
+                         S/ {(item.totalValue || 0).toFixed(2)}
+                       </span>
+                     </td>
+                     <td className="px-3 py-2 text-right">
+                       <span className="font-medium text-xs text-slate-600 font-mono tracking-tight">
+                         S/ {(item.totalIgv || 0).toFixed(2)}
+                       </span>
+                     </td>
+                     <td className="px-3 py-2 text-right">
+                       <span className="font-bold text-sm text-blue-600 font-mono tracking-tight">
+                         S/ {(item.totalAmount || 0).toFixed(2)}
+                       </span>
+                     </td>
+                     <td className="px-3 py-2 text-center">
+                       <button
+                         onClick={() => removeItem(index)}
+                         className="p-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                         title="Eliminar producto"
+                       >
+                         <Trash2 className="w-3 h-3" />
+                       </button>
+                     </td>
+                   </tr>
+                 ))
+               )}
+             </tbody>
+             {cartItems.length > 0 && (
+               <tfoot className="bg-gradient-to-r from-slate-100 to-slate-200 border-t border-slate-300">
+                 <tr>
+                   <td colSpan={3} className="px-3 py-2.5 text-right font-bold text-xs tracking-tight">
+                     Totales:
+                   </td>
+                   <td className="px-3 py-2.5 text-right font-bold text-xs font-mono">
+                     S/ {cartItems.reduce((acc, item) => acc + item.totalValue, 0).toFixed(2)}
+                   </td>
+                   <td className="px-3 py-2.5 text-right font-bold text-xs font-mono">
+                     S/ {cartItems.reduce((acc, item) => acc + item.totalIgv, 0).toFixed(2)}
+                   </td>
+                   <td className="px-3 py-2.5 text-right font-bold text-sm text-blue-600 font-mono">
+                     S/ {cartItems.reduce((acc, item) => acc + item.totalAmount, 0).toFixed(2)}
+                   </td>
+                   <td></td>
+                 </tr>
+               </tfoot>
+             )}
+           </table>
+         </div>
+       </div>
+     </div>
+
+     {/* Panel Lateral Ultra Moderno */}
+     <div className="w-80 bg-white shadow-xl flex flex-col border-l border-slate-200">
+       {/* Descuento Ultra Compacto */}
+       <div className="p-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+         <h3 className="text-xs font-bold mb-2 text-slate-700 flex items-center tracking-tight">
+           <Percent className="w-3 h-3 mr-2" />
+           Descuento Global (F3)
+         </h3>
+         <div className="flex items-center space-x-1 mb-2">
+           <button
+             onClick={() => setDiscountType('amount')}
+             className={`flex-1 py-1 text-xs rounded-md font-semibold transition-all ${
+               discountType === 'amount'
+                 ? 'bg-blue-600 text-white shadow-sm'
+                 : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+             }`}
+           >
+             S/ Monto
+           </button>
+           <button
+             onClick={() => setDiscountType('percent')}
+             className={`flex-1 py-1 text-xs rounded-md font-semibold transition-all ${
+               discountType === 'percent'
+                 ? 'bg-blue-600 text-white shadow-sm'
+                 : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+             }`}
+           >
+             % Porcentaje
+           </button>
+         </div>
+         <input
+           ref={discountInputRef}
+           type="number"
+           value={globalDiscount}
+           onChange={(e) => setGlobalDiscount(Number(e.target.value) || 0)}
+           onFocus={(e) => e.target.select()}
+           onKeyDown={(e) => {
+             if (e.key === 'Enter') {
+               e.preventDefault()
+               saveOperation()
+             }
+           }}
+           placeholder={discountType === 'amount' ? '0.00' : '0'}
+           className="w-full px-2 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-blue-500 font-mono"
+         />
+       </div>
+
+       {/* Totales Ultra Modernos */}
+       <div className="flex-1 p-3 space-y-2 text-xs">
+         <h3 className="font-bold mb-2 text-slate-700 flex items-center tracking-tight">
+           <Calculator className="w-3 h-3 mr-2" />
+           Resumen de Venta
+         </h3>
+         
+         {/* Subtotal */}
+         <div className="flex justify-between pb-2 border-b border-slate-200">
+           <span className="text-slate-600 font-medium">Subtotal:</span>
+           <span className="font-bold font-mono">S/ {(totals.subtotal || 0).toFixed(2)}</span>
+         </div>
+
+         {/* Tipos de operación */}
+         <div className="space-y-1">
+           {totals.totalTaxable > 0 && (
+             <div className="flex justify-between text-xs">
+               <span className="text-slate-500">Op. Gravada:</span>
+               <span className="text-slate-700 font-mono">S/ {(totals.totalTaxable || 0).toFixed(2)}</span>
+             </div>
+           )}
+           {totals.totalExempt > 0 && (
+             <div className="flex justify-between text-xs">
+               <span className="text-slate-500">Op. Exonerada:</span>
+               <span className="text-slate-700 font-mono">S/ {(totals.totalExempt || 0).toFixed(2)}</span>
+             </div>
+           )}
+           {totals.totalUnaffected > 0 && (
+             <div className="flex justify-between text-xs">
+               <span className="text-slate-500">Op. Inafecta:</span>
+               <span className="text-slate-700 font-mono">S/ {(totals.totalUnaffected || 0).toFixed(2)}</span>
+             </div>
+           )}
+           {totals.totalFree > 0 && (
+             <div className="flex justify-between text-xs">
+               <span className="text-slate-500">Op. Gratuita:</span>
+               <span className="text-slate-700 font-mono">S/ {(totals.totalFree || 0).toFixed(2)}</span>
+             </div>
+           )}
+         </div>
+
+         {/* IGV */}
+         <div className="flex justify-between pt-2 border-t border-slate-200">
+           <span className="text-slate-600 font-medium">IGV ({igvPercent}%):</span>
+           <span className="font-bold font-mono">S/ {(totals.totalIgv || 0).toFixed(2)}</span>
+         </div>
+
+         {/* Descuento */}
+         {totals.discountAmount > 0 && (
+           <div className="flex justify-between text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-200">
+             <span className="font-semibold">Descuento:</span>
+             <span className="font-bold font-mono">- S/ {(totals.discountAmount || 0).toFixed(2)}</span>
+           </div>
+         )}
+
+         {/* Total */}
+         <div className="flex justify-between pt-3 border-t-2 border-slate-300 text-lg font-bold">
+           <span className="tracking-tight">TOTAL:</span>
+           <span className="text-blue-600 font-mono tracking-tight">S/ {(totals.totalAmount || 0).toFixed(2)}</span>
+         </div>
+
+         {/* Información adicional */}
+         <div className="mt-3 p-2 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg border border-blue-200">
+           <div className="text-xs text-blue-700 space-y-1">
+             <div className="flex items-center">
+               <span className="font-semibold">Items:</span>
+               <span className="ml-2 font-mono">{cartItems.length}</span>
+             </div>
+             <div className="flex items-center">
+               <span className="font-semibold">Unidades:</span>
+               <span className="ml-2 font-mono">{cartItems.reduce((acc, item) => acc + item.quantity, 0)}</span>
+             </div>
+           </div>
+         </div>
+       </div>
+
+       {/* Botones Ultra Modernos */}
+       <div className="p-3 border-t border-slate-200 space-y-2">
+         <button
+           onClick={saveOperation}
+           disabled={processing || cartItems.length === 0 || !customer}
+           className={`w-full py-2.5 font-bold rounded-lg transition-all flex items-center justify-center text-sm tracking-tight ${
+             processing || cartItems.length === 0 || !customer
+               ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+               : 'bg-gradient-to-r from-emerald-600 to-emerald-700 hover:from-emerald-700 hover:to-emerald-800 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+           }`}
+         >
+           {processing ? (
+             <>
+               <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+               Procesando...
+             </>
+           ) : (
+             <>
+               <CreditCard className="w-4 h-4 mr-2" />
+               Procesar Venta (F12)
+             </>
+           )}
+         </button>
+
+         <button
+           onClick={() => {
+             if (cartItems.length > 0 && confirm('¿Está seguro de cancelar la venta actual?')) {
+               setCartItems([])
+               setCustomer(null)
+               setCustomerSearch('')
+               setGlobalDiscount(0)
+               barcodeRef.current?.focus()
+             }
+           }}
+           className="w-full py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-semibold text-sm tracking-tight"
+         >
+           Cancelar Venta
+         </button>
+       </div>
+
+       {/* Atajos Ultra Compactos */}
+       <div className="p-2 bg-gradient-to-r from-slate-50 to-slate-100 text-xs text-slate-600 space-y-1 border-t border-slate-200">
+         <div className="font-bold mb-1 text-slate-700 tracking-tight">Atajos de Teclado:</div>
+         <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+           <div className="flex items-center">
+             <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">B</kbd>
+             <span className="ml-2 font-medium">Scanner</span>
+           </div>
+           <div className="flex items-center">
+             <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F1</kbd>
+             <span className="ml-2 font-medium">Productos</span>
+           </div>
+           <div className="flex items-center">
+             <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F2</kbd>
+             <span className="ml-2 font-medium">Cliente</span>
+           </div>
+           <div className="flex items-center">
+             <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F3</kbd>
+             <span className="ml-2 font-medium">Descuento</span>
+           </div>
+           <div className="col-span-2 flex items-center mt-1">
+             <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F12</kbd>
+             <span className="ml-2 font-medium">Procesar Venta</span>
+           </div>
+           <div className="col-span-2 flex items-center">
+             <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">ESC</kbd>
+             <span className="ml-2 font-medium">Cerrar listas</span>
+           </div>
+         </div>
+       </div>
+     </div>
    </div>
- )
+
+   {/* Diálogo de Producto Ultra Moderno */}
+   {showProductDialog && editingProduct && (
+     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+       <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border border-slate-200">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold tracking-tight">Agregar Producto</h3>
+          <button
+            onClick={() => {
+              setShowProductDialog(false)
+              setEditingProduct(null)
+              productSearchRef.current?.focus()
+            }}
+            className="text-slate-400 hover:text-slate-600 transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        
+        <div className="mb-4 p-3 bg-gradient-to-br from-slate-50 to-slate-100 rounded-lg border border-slate-200">
+          <p className="font-semibold text-slate-900 tracking-tight">{editingProduct.product.description}</p>
+          <div className="flex items-center space-x-3 text-xs text-slate-600 mt-1">
+            <span className="flex items-center font-mono">
+              <Hash className="w-3 h-3 mr-1" />
+              {editingProduct.product.code}
+            </span>
+            <span className="flex items-center">
+              <Package className="w-3 h-3 mr-1" />
+              Stock: {editingProduct.product.stock}
+            </span>
+          </div>
+          <p className="text-xs text-blue-600 mt-1 font-semibold">
+            {editingProduct.product.typeAffectation.name}
+          </p>
+        </div>
+        
+        <div className="space-y-4">
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1 tracking-tight">
+              Cantidad
+            </label>
+            <input
+              ref={quantityDialogRef}
+              type="number"
+              value={editingProduct.quantity}
+              onChange={(e) => setEditingProduct({
+                ...editingProduct,
+                quantity: Math.max(1, parseInt(e.target.value) || 1)
+              })}
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  priceDialogRef.current?.select()
+                }
+              }}
+              min={1}
+              max={editingProduct.product.stock}
+              className="w-full px-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono font-semibold"
+            />
+          </div>
+          
+          <div>
+            <label className="block text-sm font-semibold text-slate-700 mb-1 tracking-tight">
+              Precio con IGV
+            </label>
+            <div className="relative">
+              <span className="absolute left-3 top-2 text-slate-500 font-mono">S/</span>
+              <input
+                ref={priceDialogRef}
+                type="number"
+                value={editingProduct.unitPrice}
+                onChange={(e) => setEditingProduct({
+                  ...editingProduct,
+                  unitPrice: Math.max(0, parseFloat(e.target.value) || 0)
+                })}
+                onFocus={(e) => e.target.select()}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    e.preventDefault()
+                    addProductFromDialog()
+                  }
+                }}
+                step="0.01"
+                className="w-full pl-8 pr-3 py-2 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent font-mono font-semibold"
+              />
+            </div>
+          </div>
+          
+          <div className="bg-gradient-to-br from-blue-50 to-blue-100 p-3 rounded-lg space-y-2 border border-blue-200">
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-600 font-medium">Precio sin IGV:</span>
+              <span className="font-bold font-mono">S/ {calculateUnitValue(editingProduct.unitPrice).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-sm">
+              <span className="text-slate-600 font-medium">IGV ({igvPercent}%):</span>
+              <span className="font-bold font-mono">S/ {(editingProduct.unitPrice - calculateUnitValue(editingProduct.unitPrice)).toFixed(2)}</span>
+            </div>
+            <div className="flex justify-between text-base font-bold pt-2 border-t border-blue-200">
+              <span className="tracking-tight">Total:</span>
+              <span className="text-blue-600 font-mono tracking-tight">S/ {(editingProduct.quantity * editingProduct.unitPrice).toFixed(2)}</span>
+            </div>
+          </div>
+          
+          <div className="flex justify-end space-x-2 pt-4">
+            <button
+              onClick={() => {
+                setShowProductDialog(false)
+                setEditingProduct(null)
+                productSearchRef.current?.focus()
+              }}
+              className="px-4 py-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors font-semibold tracking-tight"
+            >
+              Cancelar (ESC)
+            </button>
+            <button
+              onClick={addProductFromDialog}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors font-semibold tracking-tight"
+            >
+              Agregar (Enter)
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+)
 }

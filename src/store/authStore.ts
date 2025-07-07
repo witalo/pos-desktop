@@ -4,7 +4,7 @@ import { persist } from 'zustand/middleware'
 
 interface Company {
   id: string
-  name: string
+  denomination: string
   ruc: string
   email: string
   logo?: string
