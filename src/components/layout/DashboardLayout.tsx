@@ -140,7 +140,7 @@ export default function DashboardLayout() {
             <div className={`flex items-center space-x-3 ${!sidebarOpen && 'justify-center'}`}>
               {company?.logoBase64 ? (
                 <img 
-                  src={`data:image/png;base64,${company.logoBase64}`}
+                  src={company.logoBase64}
                   alt={company.denomination}
                   className="w-10 h-10 rounded-lg object-cover shadow-sm"
                 />

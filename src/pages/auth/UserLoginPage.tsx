@@ -137,10 +137,10 @@ export default function UserLoginPage() {
           {/* Header con info de empresa */}
           <div className="text-center mb-8">
             <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-br from-blue-500 to-purple-600 rounded-full mb-4">
-              {company.logo ? (
+              {company.logoBase64 ? (
                 <img 
-                  src={company.logo} 
-                  alt={company.name}
+                  src={company.logoBase64} 
+                  alt={company.denomination}
                   className="w-14 h-14 rounded-full object-cover"
                 />
               ) : (
@@ -148,7 +148,7 @@ export default function UserLoginPage() {
               )}
             </div>
             <h2 className="text-2xl font-bold text-gray-900 mb-1">
-              {company.name}
+              {company.denomination}
             </h2>
             <p className="text-sm text-gray-600 mb-1">RUC: {company.ruc}</p>
             <button
