@@ -78,7 +78,7 @@ interface CartItem {
 // =============================================
 interface Payment {
   paymentType: 'CN' | 'CR'
-  paymentMethod: 'A' | 'Y' | 'P' | 'T' | 'B'
+  paymentMethod: 'E' | 'Y' | 'P' | 'T' | 'B'
   status: 'P' | 'C'
   notes?: string
   paymentDate: string
@@ -254,7 +254,7 @@ export default function POSPage() {
   // Estado para pagos
   const [showPaymentDialog, setShowPaymentDialog] = useState(false)
   const [paymentType, setPaymentType] = useState<'CN' | 'CR'>('CN')
-  const [paymentMethod, setPaymentMethod] = useState<'A' | 'Y' | 'P' | 'T' | 'B'>('A')
+  const [paymentMethod, setPaymentMethod] = useState<'E' | 'Y' | 'P' | 'T' | 'B'>('E')
   const [payments, setPayments] = useState<Payment[]>([])
   const [currentPaymentAmount, setCurrentPaymentAmount] = useState('')
   const [selectedPaymentIndex, setSelectedPaymentIndex] = useState(-1)
@@ -750,7 +750,7 @@ export default function POSPage() {
       setPayments([])
       setCurrentPaymentAmount(totals.totalAmount.toFixed(2))
       setPaymentType('CN')
-      setPaymentMethod('A')
+      setPaymentMethod('E')
       setCreditPaymentDate(emissionDate)
       setPaymentNotes('')
       setTimeout(() => paymentAmountRef.current?.select(), 100)
@@ -942,7 +942,7 @@ export default function POSPage() {
   // Obtener nombre del método de pago
   const getPaymentMethodName = (method: string) => {
     const methods: Record<string, string> = {
-      'A': 'Efectivo',
+      'E': 'Efectivo',
       'Y': 'Yape',
       'P': 'Plin',
       'T': 'Tarjeta',
@@ -954,7 +954,7 @@ export default function POSPage() {
   // Obtener ícono del método de pago
   const getPaymentMethodIcon = (method: string) => {
     switch(method) {
-      case 'A': return '💵'
+      case 'E': return '💵'
       case 'Y': return '📱'
       case 'P': return '📱'
       case 'T': return '💳'
@@ -1802,7 +1802,7 @@ return (
           <div className="mb-4">
             <div className="grid grid-cols-5 gap-2">
               {[
-                { id: 'A', name: 'Efectivo', icon: '💵' },
+                { id: 'E', name: 'Efectivo', icon: '💵' },
                 { id: 'Y', name: 'Yape', icon: '📱' },
                 { id: 'P', name: 'Plin', icon: '📱' },
                 { id: 'T', name: 'Tarjeta', icon: '💳' },
@@ -1815,11 +1815,11 @@ return (
                   onKeyDown={(e) => {
                     if (e.key === 'ArrowRight' && index < 4) {
                       e.preventDefault()
-                      const nextId = ['A', 'Y', 'P', 'T', 'B'][index + 1]
+                      const nextId = ['E', 'Y', 'P', 'T', 'B'][index + 1]
                       document.getElementById(`payment-method-${nextId}`)?.focus()
                     } else if (e.key === 'ArrowLeft' && index > 0) {
                       e.preventDefault()
-                      const prevId = ['A', 'Y', 'P', 'T', 'B'][index - 1]
+                      const prevId = ['E', 'Y', 'P', 'T', 'B'][index - 1]
                       document.getElementById(`payment-method-${prevId}`)?.focus()
                     } else if (e.key === 'ArrowDown' || e.key === 'Enter') {
                       e.preventDefault()

@@ -27,7 +27,8 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { graphqlRequest } from '../../services/graphql'
-
+import PDFViewerModal from '../components/PDFViewerModal'
+import { formatTime } from '../utils/numberToWords'
 // =============================================
 // TIPOS E INTERFACES
 // =============================================
@@ -137,86 +138,6 @@ const STATUS_COLORS: Record<string, string> = {
 }
 
 // =============================================
-// COMPONENTE MODAL PDF
-// =============================================
-const PDFViewerModal = ({ isOpen, onClose, sale }: { isOpen: boolean, onClose: () => void, sale: Sale | null }) => {
-  if (!isOpen || !sale) return null
-
-  // URL simulada del PDF - en producción vendría del backend
-  const pdfUrl = `/api/sales/${sale.id}/pdf`
-
-  return (
-    <div className="fixed inset-0 z-50 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center">
-        <div className="fixed inset-0 transition-opacity" onClick={onClose}>
-          <div className="absolute inset-0 bg-gray-900 opacity-75"></div>
-        </div>
-
-        <div className="relative bg-white rounded-lg shadow-xl transform transition-all max-w-4xl w-full">
-          <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-3 rounded-t-lg">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center space-x-2">
-                <FileText className="w-4 h-4" />
-                <h3 className="text-sm font-semibold">Factura {sale.serial}-{sale.number}</h3>
-              </div>
-              <div className="flex items-center space-x-2">
-                <button
-                  onClick={() => window.print()}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                  title="Imprimir"
-                >
-                  <Printer className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => {/* Descargar PDF */}}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                  title="Descargar"
-                >
-                  <FileDown className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={() => {/* Enviar por email */}}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                  title="Enviar por email"
-                >
-                  <Mail className="w-4 h-4" />
-                </button>
-                <button
-                  onClick={onClose}
-                  className="p-1.5 hover:bg-white/10 rounded-lg transition-colors"
-                >
-                  <X className="w-4 h-4" />
-                </button>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-gray-100 p-4" style={{ height: '600px' }}>
-            {/* Aquí iría el iframe del PDF o un visor de PDF */}
-            <div className="w-full h-full bg-white rounded-lg shadow-inner flex items-center justify-center">
-              <div className="text-center">
-                <FileText className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-                <p className="text-gray-600 mb-2">Vista previa del PDF</p>
-                <p className="text-sm text-gray-500">
-                  En producción aquí se mostraría el PDF de la factura
-                </p>
-                {/* En producción:
-                <iframe 
-                  src={pdfUrl} 
-                  className="w-full h-full rounded-lg"
-                  title="PDF Viewer"
-                />
-                */}
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  )
-}
-
-// =============================================
 // COMPONENTE PRINCIPAL
 // =============================================
 export default function SalesListPage() {
@@ -239,7 +160,7 @@ export default function SalesListPage() {
   const [itemsPerPage, setItemsPerPage] = useState(10)
   const [showDropdown, setShowDropdown] = useState<string | null>(null)
   const [showPDFModal, setShowPDFModal] = useState(false)
-  const [selectedSale, setSelectedSale] = useState<Sale | null>(null)
+  const [selectedSaleId, setSelectedSaleId] = useState<string | null>(null)
   const [stats, setStats] = useState<SalesStats>({
     totalSales: 0,
     totalAmount: 0,
@@ -429,12 +350,12 @@ export default function SalesListPage() {
   const endIndex = startIndex + itemsPerPage
   const currentSales = filteredSales.slice(startIndex, endIndex)
 
-  // Función para abrir el PDF
-  const handleViewPDF = (sale: Sale) => {
-    setSelectedSale(sale)
-    setShowPDFModal(true)
-    setShowDropdown(null)
-  }
+// Funcion para abrir el modal de PDF:
+const handleViewPDF = (sale: Sale) => {
+  setSelectedSaleId(sale.id)
+  setShowPDFModal(true)
+  setShowDropdown(null)
+}
 
   // Generar páginas para mostrar
   const generatePageNumbers = () => {
@@ -922,9 +843,9 @@ export default function SalesListPage() {
         isOpen={showPDFModal}
         onClose={() => {
           setShowPDFModal(false)
-          setSelectedSale(null)
+          setSelectedSaleId(null)
         }}
-        sale={selectedSale}
+        saleId={selectedSaleId}
       />
 
       {/* Botón flotante para móvil */}
