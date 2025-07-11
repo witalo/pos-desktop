@@ -79,8 +79,9 @@ export const COMPANY_LOGIN_MUTATION = `
         logoBase64
         igvPercentage
         pdfSize
-        pdfColor
+        pdfColor        
         isActive
+        isPayment
       }
       logoBase64
       errors
@@ -108,6 +109,14 @@ export const USER_LOGIN_MUTATION = `
             id
             ruc
             denomination
+            email
+            phone
+            address
+            igvPercentage
+            pdfSize
+            pdfColor
+            isActive
+            isPayment
         }
         isActive
       }
@@ -127,13 +136,16 @@ export const companyLogin = async (ruc: string, email: string, password: string)
       company?: {
         id: string
         denomination: string
+        ruc: string
+        phone: string
+        email: string
+        address: string
         logoBase64: string
         igvPercentage: number
         pdfSize: string
         pdfColor: string
         isActive: boolean
-        ruc: string
-        email: string
+        isPayment: boolean        
       }
       logoBase64?: string
       errors?: string[]
@@ -177,12 +189,25 @@ export const userLogin = async (username: string, password: string, companyId: s
         id: string
         username: string
         email: string
+        phone: string
+        dni: string
         firstName: string
         lastName: string
+        isActive: boolean
       }
       company?: {
         id: string
         denomination: string
+        ruc: string
+        phone: string
+        email: string
+        address: string
+        logoBase64: string
+        igvPercentage: number
+        pdfSize: string
+        pdfColor: string
+        isActive: boolean
+        isPayment: boolean   
       }
       errors?: string[]
     }

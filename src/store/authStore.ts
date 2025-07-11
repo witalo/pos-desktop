@@ -3,23 +3,29 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 
 interface Company {
-  id: string
+  id: string  
   denomination: string
   ruc: string
   email: string
+  phone: string
+  address: string
   logo?: string
   logoBase64?: string
   igvPercentage?: number | 18
   pdfSize?: string       
-  pdfColor?: string     
+  pdfColor?: string  
+  isActive: boolean
+  isPayment: boolean
 }
 
 interface User {
   id: string
   username: string
   email: string
+  dni: string
   firstName: string
   lastName: string
+  isActive: boolean
 }
 
 interface AuthState {
