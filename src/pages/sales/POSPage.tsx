@@ -74,6 +74,16 @@ interface CartItem {
   totalIgv: number
   totalAmount: number
 }
+// TIPOS PARA PAGOS
+// =============================================
+interface Payment {
+  payment_type: 'CN' | 'CR'
+  payment_method: 'A' | 'Y' | 'P' | 'T' | 'B'
+  status: 'P' | 'C'
+  notes?: string
+  payment_date: string
+  paid_amount: number
+}
 
 // =============================================
 // QUERIES GRAPHQL
@@ -154,6 +164,7 @@ const CREATE_OPERATION_MUTATION = `
     $totalFree: Float
     $totalAmount: Float!
     $items: [OperationDetailInput]!
+    $payments: [PaymentInput]
   ) {
     createOperation(
       documentId: $documentId
@@ -177,6 +188,7 @@ const CREATE_OPERATION_MUTATION = `
       totalFree: $totalFree
       totalAmount: $totalAmount
       items: $items
+      payments: $payments
     ) {
       success
       message
@@ -238,6 +250,14 @@ export default function POSPage() {
   
   // Estado de procesamiento
   const [processing, setProcessing] = useState(false)
+
+  // Estado para pagos
+  const [showPaymentDialog, setShowPaymentDialog] = useState(false)
+  const [paymentType, setPaymentType] = useState<'CN' | 'CR'>('CN')
+  const [paymentMethod, setPaymentMethod] = useState<'A' | 'Y' | 'P' | 'T' | 'B'>('A')
+  const [payments, setPayments] = useState<Payment[]>([])
+  const [currentPaymentAmount, setCurrentPaymentAmount] = useState('')
+  const [selectedPaymentIndex, setSelectedPaymentIndex] = useState(-1)
   
   // =============================================
   // REFERENCIAS
@@ -251,6 +271,7 @@ export default function POSPage() {
   const discountInputRef = useRef<HTMLInputElement>(null)
   const quantityDialogRef = useRef<HTMLInputElement>(null)
   const priceDialogRef = useRef<HTMLInputElement>(null)
+  const paymentAmountRef = useRef<HTMLInputElement>(null)
 
   // Timer para ocultar resultados
   const hideResultsTimer = useRef<NodeJS.Timeout>()
@@ -719,7 +740,70 @@ export default function POSPage() {
       barcodeRef.current?.focus()
       return
     }
+    // Si está habilitado el módulo de pagos, mostrar diálogo
+    if (company?.isPayment) {
+      setShowPaymentDialog(true)
+      setPayments([])
+      setCurrentPaymentAmount(totals.totalAmount.toFixed(2))
+      setPaymentType('CN')
+      setPaymentMethod('A')
+      setTimeout(() => paymentAmountRef.current?.select(), 100)
+    } else {
+      // Procesar directamente sin pagos
+      processOperation([])
+    }
+    
+    // try {
+    //   const operationData = {
+    //     documentId: selectedDocument?.id,
+    //     serialId: selectedSerial?.id,
+    //     operationType: 'S',
+    //     operationDate: emissionDate,
+    //     emitDate: emissionDate,
+    //     emitTime: currentTime.toTimeString().split(' ')[0],
+    //     personId: customer.id,
+    //     userId: user?.id,
+    //     companyId: company?.id,
+    //     currency: 'PEN',
+    //     globalDiscountPercent: discountType === 'percent' ? globalDiscount : 0,
+    //     globalDiscount: discountType === 'amount' ? globalDiscount : 0,
+    //     totalDiscount: totals.discountAmount,
+    //     igvPercent: igvPercent,
+    //     igvAmount: totals.totalIgv,
+    //     totalTaxable: totals.totalTaxable,
+    //     totalUnaffected: totals.totalUnaffected,
+    //     totalExempt: totals.totalExempt,
+    //     totalFree: totals.totalFree,
+    //     totalAmount: totals.totalAmount,
+    //     items: cartItems.map(item => ({
+    //       productId: item.product.id,
+    //       quantity: item.quantity,
+    //       unitValue: item.unitValue,
+    //       unitPrice: item.unitPrice,
+    //       discountPercentage: 0,
+    //       typeAffectationId: parseInt(item.product.typeAffectation.code)
+    //     }))
+    //   }
 
+    //   const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
+      
+    //   if (response.createOperation.success) {
+    //     const operation = response.createOperation.operation
+    //     alert(`Venta ${operation.serial}-${operation.number} guardada exitosamente`)
+    //     // Redirigir a la lista de ventas
+    //     navigate('/sales')
+    //   } else {
+    //     alert(`Error: ${response.createOperation.message}`)
+    //   }
+    // } catch (error) {
+    //   console.error('Error al guardar venta:', error)
+    //   alert('Error al procesar la venta')
+    // } finally {
+    //   setProcessing(false)
+    // }
+  }
+  // Procesar la operación con los pagos
+  const processOperation = async (paymentsList: Payment[]) => {
     setProcessing(true)
     const currentTime = new Date()
     
@@ -731,7 +815,7 @@ export default function POSPage() {
         operationDate: emissionDate,
         emitDate: emissionDate,
         emitTime: currentTime.toTimeString().split(' ')[0],
-        personId: customer.id,
+        personId: customer?.id,
         userId: user?.id,
         companyId: company?.id,
         currency: 'PEN',
@@ -752,7 +836,8 @@ export default function POSPage() {
           unitPrice: item.unitPrice,
           discountPercentage: 0,
           typeAffectationId: parseInt(item.product.typeAffectation.code)
-        }))
+        })),
+        payments: paymentsList
       }
 
       const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
@@ -770,9 +855,88 @@ export default function POSPage() {
       alert('Error al procesar la venta')
     } finally {
       setProcessing(false)
+      setShowPaymentDialog(false)
     }
   }
 
+  // Agregar pago
+  const addPayment = () => {
+    const amount = parseFloat(currentPaymentAmount)
+    if (isNaN(amount) || amount <= 0) return
+
+    const totalPaid = payments.reduce((sum, p) => sum + p.paid_amount, 0)
+    const remaining = totals.totalAmount - totalPaid
+
+    if (amount > remaining + 0.01) {
+      alert(`El monto excede el restante: S/ ${remaining.toFixed(2)}`)
+      return
+    }
+
+    const newPayment: Payment = {
+      payment_type: paymentType,
+      payment_method: paymentMethod,
+      status: 'C',
+      payment_date: emissionDate,
+      paid_amount: amount
+    }
+
+    setPayments([...payments, newPayment])
+    setCurrentPaymentAmount('')
+    
+    // Si se completó el pago, enfocar en confirmar
+    if (Math.abs(totalPaid + amount - totals.totalAmount) < 0.01) {
+      // Pago completo
+      setTimeout(() => {
+        const confirmButton = document.getElementById('confirm-payment-button')
+        confirmButton?.focus()
+      }, 100)
+    } else {
+      // Aún falta pagar
+      paymentAmountRef.current?.select()
+    }
+  }
+
+  // Eliminar pago
+  const removePayment = (index: number) => {
+    setPayments(payments.filter((_, i) => i !== index))
+    paymentAmountRef.current?.focus()
+  }
+
+  // Confirmar pagos
+  const confirmPayments = () => {
+    const totalPaid = payments.reduce((sum, p) => sum + p.paid_amount, 0)
+    
+    if (Math.abs(totalPaid - totals.totalAmount) > 0.01) {
+      alert(`El total pagado (S/ ${totalPaid.toFixed(2)}) no coincide con el total de la venta (S/ ${totals.totalAmount.toFixed(2)})`)
+      return
+    }
+
+    processOperation(payments)
+  }
+
+  // Obtener nombre del método de pago
+  const getPaymentMethodName = (method: string) => {
+    const methods: Record<string, string> = {
+      'A': 'Efectivo',
+      'Y': 'Yape',
+      'P': 'Plin',
+      'T': 'Tarjeta',
+      'B': 'Transferencia'
+    }
+    return methods[method] || method
+  }
+
+  // Obtener ícono del método de pago
+  const getPaymentMethodIcon = (method: string) => {
+    switch(method) {
+      case 'A': return '💵'
+      case 'Y': return '📱'
+      case 'P': return '📱'
+      case 'T': return '💳'
+      case 'B': return '🏦'
+      default: return '💰'
+    }
+  }
   // Calcular totales
   const totals = calculateTotals()
 
@@ -1500,6 +1664,284 @@ return (
               Agregar (Enter)
             </button>
           </div>
+        </div>
+      </div>
+    </div>
+  )}
+  {/* Diálogo de Pagos Ultra Moderno */}
+  {showPaymentDialog && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
+      <div className="bg-gradient-to-br from-blue-600 to-blue-800 rounded-2xl p-6 max-w-md w-full shadow-2xl">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center space-x-3">
+            <div className="bg-white/20 p-2 rounded-lg backdrop-blur-sm">
+              <CreditCard className="w-5 h-5 text-white" />
+            </div>
+            <h3 className="text-xl font-bold text-white tracking-tight">Registro de Pagos</h3>
+          </div>
+          <button
+            onClick={() => {
+              setShowPaymentDialog(false)
+              setPayments([])
+            }}
+            className="text-white/70 hover:text-white transition-colors"
+          >
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+
+        {/* Resumen de montos */}
+        <div className="bg-white/10 backdrop-blur-sm rounded-xl p-4 mb-4">
+          <div className="grid grid-cols-3 gap-4 text-center">
+            <div>
+              <p className="text-xs text-white/70 font-medium">Total Venta</p>
+              <p className="text-lg font-bold text-white font-mono">S/ {totals.totalAmount.toFixed(2)}</p>
+            </div>
+            <div>
+              <p className="text-xs text-white/70 font-medium">Pagado</p>
+              <p className="text-lg font-bold text-emerald-300 font-mono">
+                S/ {payments.reduce((sum, p) => sum + p.paid_amount, 0).toFixed(2)}
+              </p>
+            </div>
+            <div>
+              <p className="text-xs text-white/70 font-medium">Restante</p>
+              <p className="text-lg font-bold text-yellow-300 font-mono">
+                S/ {(totals.totalAmount - payments.reduce((sum, p) => sum + p.paid_amount, 0)).toFixed(2)}
+              </p>
+            </div>
+          </div>
+        </div>
+
+        {/* Tipo de pago */}
+        <div className="mb-4">
+          <div className="flex items-center space-x-2">
+            <button
+              onClick={() => setPaymentType('CN')}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowRight') {
+                  setPaymentType('CR')
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  document.getElementById('payment-method-A')?.focus()
+                }
+              }}
+              className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+                paymentType === 'CN'
+                  ? 'bg-white text-blue-700 shadow-md'
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              }`}
+            >
+              Contado
+            </button>
+            <button
+              onClick={() => setPaymentType('CR')}
+              onKeyDown={(e) => {
+                if (e.key === 'ArrowLeft') {
+                  setPaymentType('CN')
+                } else if (e.key === 'ArrowDown') {
+                  e.preventDefault()
+                  document.getElementById('payment-method-A')?.focus()
+                }
+              }}
+              className={`flex-1 py-2 px-4 rounded-lg font-semibold transition-all ${
+                paymentType === 'CR'
+                  ? 'bg-white text-blue-700 shadow-md'
+                  : 'bg-white/20 text-white hover:bg-white/30'
+              }`}
+            >
+              Crédito
+            </button>
+          </div>
+        </div>
+
+        {/* Métodos de pago */}
+        {paymentType === 'CN' && (
+          <div className="mb-4">
+            <div className="grid grid-cols-5 gap-2">
+              {[
+                { id: 'A', name: 'Efectivo', icon: '💵' },
+                { id: 'Y', name: 'Yape', icon: '📱' },
+                { id: 'P', name: 'Plin', icon: '📱' },
+                { id: 'T', name: 'Tarjeta', icon: '💳' },
+                { id: 'B', name: 'Transfer', icon: '🏦' }
+              ].map((method, index) => (
+                <button
+                  key={method.id}
+                  id={`payment-method-${method.id}`}
+                  onClick={() => setPaymentMethod(method.id as any)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'ArrowRight' && index < 4) {
+                      e.preventDefault()
+                      const nextId = ['A', 'Y', 'P', 'T', 'B'][index + 1]
+                      document.getElementById(`payment-method-${nextId}`)?.focus()
+                    } else if (e.key === 'ArrowLeft' && index > 0) {
+                      e.preventDefault()
+                      const prevId = ['A', 'Y', 'P', 'T', 'B'][index - 1]
+                      document.getElementById(`payment-method-${prevId}`)?.focus()
+                    } else if (e.key === 'ArrowDown') {
+                      e.preventDefault()
+                      paymentAmountRef.current?.focus()
+                    } else if (e.key === 'ArrowUp') {
+                      e.preventDefault()
+                      const typeButton = paymentType === 'CN' ? 
+                        document.querySelector('[onClick*="CN"]') : 
+                        document.querySelector('[onClick*="CR"]')
+                      ;(typeButton as HTMLElement)?.focus()
+                    }
+                  }}
+                  className={`py-3 px-2 rounded-lg font-medium transition-all flex flex-col items-center space-y-1 ${
+                    paymentMethod === method.id
+                      ? 'bg-white text-blue-700 shadow-md'
+                      : 'bg-white/20 text-white hover:bg-white/30'
+                  }`}
+                >
+                  <span className="text-xl">{method.icon}</span>
+                  <span className="text-xs">{method.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Monto a pagar */}
+        <div className="mb-4">
+          <div className="relative">
+            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70 font-mono text-lg">S/</span>
+            <input
+              ref={paymentAmountRef}
+              type="number"
+              value={currentPaymentAmount}
+              onChange={(e) => setCurrentPaymentAmount(e.target.value)}
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  addPayment()
+                } else if (e.key === 'ArrowUp') {
+                  e.preventDefault()
+                  if (paymentType === 'CN') {
+                    document.getElementById('payment-method-A')?.focus()
+                  } else {
+                    const typeButton = document.querySelector('[onClick*="CN"]')
+                    ;(typeButton as HTMLElement)?.focus()
+                  }
+                } else if (e.key === 'ArrowDown' && payments.length > 0) {
+                  e.preventDefault()
+                  setSelectedPaymentIndex(0)
+                }
+              }}
+              step="0.01"
+              placeholder="0.00"
+              className="w-full pl-10 pr-16 py-4 bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-xl text-white text-2xl font-mono placeholder-white/40 focus:outline-none focus:border-white/60 text-center"
+            />
+            <button
+              onClick={addPayment}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-emerald-500 hover:bg-emerald-600 text-white w-12 h-12 rounded-lg flex items-center justify-center transition-colors shadow-lg"
+            >
+              <span className="text-2xl font-bold">+</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Lista de pagos */}
+        {payments.length > 0 && (
+          <div className="mb-4 space-y-2 max-h-40 overflow-y-auto">
+            {payments.map((payment, index) => (
+              <div
+                key={index}
+                className={`bg-white/10 backdrop-blur-sm rounded-lg p-3 flex items-center justify-between ${
+                  selectedPaymentIndex === index ? 'ring-2 ring-white' : ''
+                }`}
+                tabIndex={0}
+                onKeyDown={(e) => {
+                  if (e.key === 'Delete') {
+                    removePayment(index)
+                    setSelectedPaymentIndex(-1)
+                    paymentAmountRef.current?.focus()
+                  } else if (e.key === 'ArrowDown' && index < payments.length - 1) {
+                    e.preventDefault()
+                    setSelectedPaymentIndex(index + 1)
+                  } else if (e.key === 'ArrowUp') {
+                    e.preventDefault()
+                    if (index > 0) {
+                      setSelectedPaymentIndex(index - 1)
+                    } else {
+                      setSelectedPaymentIndex(-1)
+                      paymentAmountRef.current?.focus()
+                    }
+                  } else if (e.key === 'ArrowDown' && index === payments.length - 1) {
+                    e.preventDefault()
+                    setSelectedPaymentIndex(-1)
+                    document.getElementById('cancel-payment-button')?.focus()
+                  }
+                }}
+                onFocus={() => setSelectedPaymentIndex(index)}
+              >
+                <div className="flex items-center space-x-3">
+                  <span className="text-2xl">{getPaymentMethodIcon(payment.payment_method)}</span>
+                  <div>
+                    <p className="text-white font-semibold text-sm">
+                      {getPaymentMethodName(payment.payment_method)} • {payment.payment_type === 'CN' ? 'Contado' : 'Crédito'}
+                    </p>
+                    <p className="text-white/70 text-xs">{payment.payment_date}</p>
+                  </div>
+                </div>
+                <div className="flex items-center space-x-2">
+                  <span className="text-white font-bold font-mono">S/ {payment.paid_amount.toFixed(2)}</span>
+                  <button
+                    onClick={() => removePayment(index)}
+                    className="text-red-300 hover:text-red-200 transition-colors"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Botones de acción */}
+        <div className="flex space-x-3">
+          <button
+            id="cancel-payment-button"
+            onClick={() => {
+              setShowPaymentDialog(false)
+              setPayments([])
+            }}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowRight') {
+                e.preventDefault()
+                document.getElementById('confirm-payment-button')?.focus()
+              } else if (e.key === 'ArrowUp' && payments.length > 0) {
+                e.preventDefault()
+                setSelectedPaymentIndex(payments.length - 1)
+              }
+            }}
+            className="flex-1 py-3 bg-white/20 hover:bg-white/30 text-white rounded-lg font-semibold transition-all"
+          >
+            Cancelar
+          </button>
+          <button
+            id="confirm-payment-button"
+            onClick={confirmPayments}
+            disabled={Math.abs(payments.reduce((sum, p) => sum + p.paid_amount, 0) - totals.totalAmount) > 0.01}
+            onKeyDown={(e) => {
+              if (e.key === 'ArrowLeft') {
+                e.preventDefault()
+                document.getElementById('cancel-payment-button')?.focus()
+              } else if (e.key === 'Enter') {
+                e.preventDefault()
+                confirmPayments()
+              }
+            }}
+            className={`flex-1 py-3 rounded-lg font-semibold transition-all ${
+              Math.abs(payments.reduce((sum, p) => sum + p.paid_amount, 0) - totals.totalAmount) > 0.01
+                ? 'bg-gray-500 text-gray-300 cursor-not-allowed'
+                : 'bg-emerald-500 hover:bg-emerald-600 text-white shadow-lg'
+            }`}
+          >
+            Confirmar
+          </button>
         </div>
       </div>
     </div>
