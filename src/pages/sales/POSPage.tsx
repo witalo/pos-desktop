@@ -878,11 +878,25 @@ export default function POSPage() {
       return
     }
 
+    // Crear fecha y hora actual del sistema
+    const currentDateTime = new Date()
+    
+    // Para pagos al contado: usar fecha de emisión + hora actual
+    // Para pagos a crédito: usar fecha seleccionada + hora actual
+    const paymentBaseDate = paymentType === 'CR' ? creditPaymentDate : emissionDate
+    const paymentDateTime = new Date(paymentBaseDate)
+    
+    // Establecer la hora actual en la fecha de pago
+    paymentDateTime.setHours(currentDateTime.getHours())
+    paymentDateTime.setMinutes(currentDateTime.getMinutes())
+    paymentDateTime.setSeconds(currentDateTime.getSeconds())
+    paymentDateTime.setMilliseconds(currentDateTime.getMilliseconds())
+
     const newPayment: Payment = {
       paymentType: paymentType,
       paymentMethod: paymentMethod,
       status: 'C',
-      paymentDate: paymentType === 'CR' ? creditPaymentDate : emissionDate,
+      paymentDate: paymentDateTime.toISOString().slice(0, 19).replace('T', ' '), // Formato: YYYY-MM-DD HH:mm:ss
       paidAmount: amount,
       notes: paymentNotes || undefined
     }
@@ -1849,7 +1863,10 @@ return (
           </div>
         ) : (
           <div className="mb-4">
-            <label className="block text-xs text-white/70 font-medium mb-2">Fecha de Pago</label>
+            <label className="block text-xs text-white/70 font-medium mb-2">
+              Fecha de Pago
+              <span className="ml-2 text-white/50 text-xs">(+ hora actual automática)</span>
+            </label>
             <div className="relative">
               <input
                 ref={creditDateRef}
@@ -1871,6 +1888,10 @@ return (
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70">📅</span>
             </div>
+            <p className="text-xs text-white/50 mt-1 flex items-center">
+              <Clock className="w-3 h-3 mr-1" />
+              Se registrará con la hora exacta del sistema
+            </p>
           </div>
         )}
 
@@ -1920,6 +1941,15 @@ return (
               <span className="text-2xl font-bold">+</span>
             </button>
           </div>
+          
+          {/* Indicador de fecha y hora */}
+          <p className="text-xs text-white/50 flex items-center justify-center">
+            <Clock className="w-3 h-3 mr-1" />
+            {paymentType === 'CN' 
+              ? `Fecha: ${new Date(emissionDate).toLocaleDateString('es-PE')} + hora actual`
+              : `Fecha: ${new Date(creditPaymentDate).toLocaleDateString('es-PE')} + hora actual`
+            }
+          </p>
           
           {/* Campo de notas */}
           <div>
@@ -1987,7 +2017,7 @@ return (
                       {getPaymentMethodName(payment.paymentMethod)} • {payment.paymentType === 'CN' ? 'Contado' : 'Crédito'}
                     </p>
                     <p className="text-white/70 text-xs">
-                      {new Date(payment.paymentDate).toLocaleDateString('es-PE')}
+                      {new Date(payment.paymentDate).toLocaleDateString('es-PE')} {new Date(payment.paymentDate).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
                       {payment.notes && <span className="ml-2">• {payment.notes}</span>}
                     </p>
                   </div>
