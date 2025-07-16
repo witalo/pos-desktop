@@ -193,22 +193,90 @@ export default function PDFViewerModal({ isOpen, onClose, saleId }: PDFViewerMod
     setIsDownloading(true)
     
     try {
-      // Simular descarga (en producción esto sería una llamada al backend)
-      await new Promise(resolve => setTimeout(resolve, 1500))
+      // Importar html2pdf de forma dinámica
+      // @ts-ignore - html2pdf.js no tiene tipos definidos
+      const html2pdf = (await import('html2pdf.js')).default
       
-      // Crear elemento de descarga temporal
+      // Crear el nombre del archivo
       const fileName = `${sale.serial}-${sale.number.toString().padStart(8, '0')}.pdf`
       
-      // En producción, aquí harías una llamada al backend para generar el PDF real
-      // Por ahora, simulamos la descarga
-      console.log(`Descargando: ${fileName}`)
+      // Obtener el elemento a convertir
+      const element = printRef.current
+      if (!element) {
+        throw new Error('No se pudo encontrar el contenido para descargar')
+      }
+
+      // Configuración que garantiza UNA SOLA PÁGINA
+      const isTicket = company?.pdfSize === 'T'
+
+      // Para ticket, asegurar que capture todo el contenido
+      if (isTicket) {
+        // Forzar que el elemento sea completamente visible
+        element.style.height = 'auto'
+        element.style.minHeight = 'auto'
+        element.style.overflow = 'visible'
+      }
       
-      // Mostrar notificación de éxito (podrías usar una librería de notificaciones)
-      alert(`Archivo ${fileName} descargado exitosamente`)
+      const options = {
+        margin: isTicket ? [1, 0, 1, 0] : [5, 5, 5, 5], // Sin márgenes laterales para ticket
+        filename: fileName,
+        pagebreak: { mode: 'avoid-all' },
+        image: { 
+          type: 'jpeg', 
+          quality: 0.92
+        },
+        html2canvas: {
+          scale: isTicket ? 4.0 : 2.5, // Escala súper alta para ticket
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          width: isTicket ? 300 : 800, // Ancho más pequeño para que se estire más
+          windowWidth: isTicket ? 300 : 800,
+          height: isTicket ? window.innerHeight * 2 : window.innerHeight, // Altura extra para ticket
+          windowHeight: isTicket ? window.innerHeight * 2 : window.innerHeight,
+          dpi: 300,
+          letterRendering: true
+        },
+        jsPDF: { 
+          unit: 'mm', 
+          format: isTicket ? [80, 350] : 'a4', // Altura más grande para capturar todo
+          orientation: 'portrait',
+          compress: false
+        }
+      }
+
+      // GENERAR CON ESCALADO DIFERENTE SEGÚN FORMATO
+      await html2pdf()
+        .set(options)
+        .from(element)
+        .toPdf()
+        .get('pdf')
+        .then((pdf: any) => {
+          // Eliminar páginas extras
+          while (pdf.internal.getNumberOfPages() > 1) {
+            pdf.deletePage(pdf.internal.getNumberOfPages())
+          }
+          
+          // Ajustar escala según el formato
+          if (isTicket) {
+            // Para ticket: escala alta pero que permita ver todo el contenido
+            pdf.internal.scaleFactor = pdf.internal.scaleFactor * 2.8
+          } else {
+            // Para A4: escala moderada
+            pdf.internal.scaleFactor = pdf.internal.scaleFactor * 1.2
+          }
+        })
+        .save()
+
+      
+      
+      // Notificación de éxito
+      alert(`✅ PDF descargado exitosamente\n📄 Archivo: ${fileName}\n📁 Ubicación: Carpeta de Descargas`)
       
     } catch (error) {
-      console.error('Error al descargar:', error)
-      alert('Error al descargar el archivo PDF')
+      console.error('Error al generar PDF:', error)
+      const errorMessage = error instanceof Error ? error.message : 'Error desconocido'
+      alert(`❌ Error al generar el PDF: ${errorMessage}\n\nIntente nuevamente.`)
     } finally {
       setIsDownloading(false)
     }
@@ -362,7 +430,7 @@ export default function PDFViewerModal({ isOpen, onClose, saleId }: PDFViewerMod
                 </div>
               </div>
             ) : sale ? (
-              <div className="print-content">
+              <div ref={printRef} className="print-content">
                 <InvoicePDF sale={sale} company={company} />
               </div>
             ) : null}

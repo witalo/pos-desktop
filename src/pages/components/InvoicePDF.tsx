@@ -93,238 +93,252 @@ function A4Format({ sale, company }: InvoicePDFProps) {
       `}} />
 
       <div className="print-container-a4 a4-container bg-white mx-auto shadow-2xl border border-gray-100" style={{ width: '21cm', minHeight: '29.7cm' }}>
-        {/* Header Moderno con Gradiente */}
-        <div className="print-header-a4 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 text-white p-6 relative overflow-hidden">
+        {/* Header Compacto */}
+        <div className="print-header-a4 bg-gradient-to-br from-slate-800 via-slate-700 to-slate-900 text-white p-3 relative overflow-hidden">
           {/* Decoración de fondo */}
-          <div className="absolute top-0 right-0 w-32 h-32 opacity-10">
-            <div className="w-full h-full bg-white rounded-full transform translate-x-16 -translate-y-16"></div>
+          <div className="absolute top-0 right-0 w-24 h-24 opacity-10">
+            <div className="w-full h-full bg-white rounded-full transform translate-x-12 -translate-y-12"></div>
           </div>
           
-          <div className="relative flex justify-between items-start">
-            <div className="flex-1">
-              {/* Logo y datos de empresa */}
+          <div className="relative grid grid-cols-3 gap-4 items-center">
+            {/* IZQUIERDA: Solo Logo */}
+            <div className="flex justify-start items-center">
               {company?.logoBase64 && (
                 <img 
                   src={company.logoBase64} 
                   alt="Logo" 
-                  className="h-16 mb-3 rounded-lg shadow-lg bg-white p-1"
-                  style={{ maxWidth: '200px' }}
+                  className="h-20 w-20 rounded-full shadow-lg bg-white p-1 object-cover"
+                  style={{ minWidth: '80px' }}
                 />
               )}
-              <h1 className="text-2xl font-bold mb-2">{company?.denomination || 'MI EMPRESA S.A.C.'}</h1>
-              <div className="space-y-1 text-slate-200">
-                <p className="flex items-center">
-                  <span className="w-2 h-2 bg-blue-400 rounded-full mr-2"></span>
+            </div>
+            
+            {/* CENTRO: Información de empresa centrada */}
+            <div className="flex flex-col items-center justify-center text-center">
+              <h1 className="text-xl font-bold mb-1">{company?.denomination || 'MI EMPRESA S.A.C.'}</h1>
+              <div className="space-y-0.5 text-slate-200 text-sm">
+                <p className="flex items-center justify-center">
+                  <span className="w-1.5 h-1.5 bg-blue-400 rounded-full mr-2"></span>
                   {company?.address || 'Dirección de la empresa'}
                 </p>
-                <p className="flex items-center">
-                  <span className="w-2 h-2 bg-green-400 rounded-full mr-2"></span>
+                <p className="flex items-center justify-center">
+                  <span className="w-1.5 h-1.5 bg-green-400 rounded-full mr-2"></span>
                   Teléfono: {company?.phone || '999999999'}
                 </p>
-                <p className="flex items-center">
-                  <span className="w-2 h-2 bg-purple-400 rounded-full mr-2"></span>
+                <p className="flex items-center justify-center">
+                  <span className="w-1.5 h-1.5 bg-purple-400 rounded-full mr-2"></span>
                   {company?.email || 'empresa@email.com'}
                 </p>
               </div>
             </div>
             
-            {/* Cuadro de RUC y documento */}
-            <div className="bg-white text-gray-900 rounded-xl p-6 shadow-xl border-l-4 border-blue-500" style={{ minWidth: '280px' }}>
-              <div className="text-center">
-                <p className="text-sm font-semibold text-gray-600 mb-1">RUC:</p>
-                <p className="text-lg font-bold text-gray-900 mb-3">{company?.ruc || '20123456789'}</p>
-                <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-3"></div>
-                <p className="text-sm font-bold text-blue-600 uppercase tracking-wide">{documentType}</p>
-                <p className="text-3xl font-bold text-gray-900 mt-2 tracking-tight">
-                  {sale.serial}-{sale.number.toString().padStart(8, '0')}
-                </p>
+            {/* DERECHA: Cuadro de RUC y documento */}
+            <div className="flex justify-end items-center">
+              <div className="bg-white text-gray-900 rounded-lg p-3 shadow-lg border-l-4 border-blue-500" style={{ minWidth: '220px' }}>
+                <div className="text-center">
+                  <p className="text-xs font-semibold text-gray-600 mb-1">RUC:</p>
+                  <p className="text-sm font-bold text-gray-900 mb-2">{company?.ruc || '20123456789'}</p>
+                  <div className="h-px bg-gradient-to-r from-transparent via-gray-300 to-transparent my-2"></div>
+                  <p className="text-xs font-bold text-blue-600 uppercase tracking-wide">{documentType}</p>
+                  <p className="text-xl font-bold text-gray-900 mt-1 tracking-tight">
+                    {sale.serial}-{sale.number.toString().padStart(8, '0')}
+                  </p>
+                </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="p-6">
-          {/* Datos del cliente con diseño moderno */}
-          <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-6 mb-6 border border-gray-200">
-            <h3 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-              <span className="w-1 h-6 bg-blue-500 rounded-full mr-3"></span>
+        <div className="p-3">
+          {/* Datos del cliente compacto */}
+          <div className="bg-gray-50 rounded-lg p-3 mb-3 border border-gray-200">
+            <h3 className="text-xs font-bold text-gray-800 mb-2 text-left">
               INFORMACIÓN DEL CLIENTE
             </h3>
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm font-semibold text-gray-600">Razón Social / Nombre:</span>
-                  <p className="text-base font-medium text-gray-900">{customerInfo.name}</p>
+            <div className="grid grid-cols-2 gap-3 text-xs">
+              <div className="text-left">
+                <div className="mb-1.5">
+                  <span className="text-xs text-gray-600">Razón Social / Nombre:</span>
+                  <div className="font-medium text-gray-900">{customerInfo.name}</div>
+                </div>
+                <div className="mb-1.5">
+                  <span className="text-xs text-gray-600">{customerInfo.type}:</span>
+                  <div className="font-medium text-gray-900 font-mono">{customerInfo.document}</div>
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-gray-600">{customerInfo.type}:</span>
-                  <p className="text-base font-medium text-gray-900 font-mono">{customerInfo.document}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-gray-600">Dirección:</span>
-                  <p className="text-sm text-gray-700">{customerInfo.address}</p>
+                  <span className="text-xs text-gray-600">Dirección:</span>
+                  <div className="text-xs text-gray-700">{customerInfo.address}</div>
                 </div>
               </div>
-              <div className="space-y-3">
-                <div>
-                  <span className="text-sm font-semibold text-gray-600">Fecha de Emisión:</span>
-                  <p className="text-base font-medium text-gray-900">{new Date(sale.emitDate).toLocaleDateString('es-PE')}</p>
+              <div className="text-left">
+                <div className="mb-1.5">
+                  <span className="text-xs text-gray-600">Fecha de Emisión:</span>
+                  <div className="font-medium text-gray-900">{new Date(sale.emitDate).toLocaleDateString('es-PE')}</div>
+                </div>
+                <div className="mb-1.5">
+                  <span className="text-xs text-gray-600">Hora:</span>
+                  <div className="font-medium text-gray-900 font-mono">{formatTime(sale.emitTime)}</div>
                 </div>
                 <div>
-                  <span className="text-sm font-semibold text-gray-600">Hora:</span>
-                  <p className="text-base font-medium text-gray-900 font-mono">{formatTime(sale.emitTime)}</p>
-                </div>
-                <div>
-                  <span className="text-sm font-semibold text-gray-600">Moneda:</span>
-                  <p className="text-base font-medium text-gray-900">{sale.currency === 'PEN' ? 'Soles' : 'Dólares'}</p>
+                  <span className="text-xs text-gray-600">Moneda:</span>
+                  <div className="font-medium text-gray-900">{sale.currency === 'PEN' ? 'Soles' : 'Dólares'}</div>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* Tabla de detalles moderna */}
-          <div className="mb-6 rounded-xl overflow-hidden shadow-lg border border-gray-200">
-            <table className="w-full">
+          {/* Tabla de detalles compacta */}
+          <div className="mb-3 rounded-lg overflow-hidden border border-gray-200">
+            <table className="w-full text-xs">
               <thead>
                 <tr className="print-table-header bg-gradient-to-r from-slate-800 to-slate-700 text-white">
-                  <th className="text-left py-4 px-4 font-semibold text-sm w-16">CANT.</th>
-                  <th className="text-left py-4 px-4 font-semibold text-sm">DESCRIPCIÓN</th>
-                  <th className="text-right py-4 px-4 font-semibold text-sm w-28">P. UNITARIO</th>
-                  <th className="text-right py-4 px-4 font-semibold text-sm w-28">IMPORTE</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-xs w-12">CANT.</th>
+                  <th className="text-left py-1.5 px-2 font-semibold text-xs">DESCRIPCIÓN</th>
+                  <th className="text-right py-1.5 px-2 font-semibold text-xs w-20">P. UNIT</th>
+                  <th className="text-right py-1.5 px-2 font-semibold text-xs w-20">IMPORTE</th>
                 </tr>
               </thead>
               <tbody className="bg-white">
+                {/* Mostrar detalles reales */}
                 {sale.details.map((detail: any, idx: number) => (
-                  <tr key={idx} className={`border-b border-gray-100 hover:bg-gray-50 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
-                    <td className="py-3 px-4 text-center font-medium text-gray-900">{detail.quantity}</td>
-                    <td className="py-3 px-4 text-gray-800">
-                      <div className="font-medium">{detail.description}</div>
+                  <tr key={idx} className={`border-b border-gray-100 ${idx % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                    <td className="py-1.5 px-2 text-center font-medium text-gray-900 text-xs">{detail.quantity}</td>
+                    <td className="py-1.5 px-2 text-gray-800">
+                      <div className="font-medium text-xs">{detail.description}</div>
                       {detail.product?.code && (
-                        <div className="text-xs text-gray-500 mt-1">Código: {detail.product.code}</div>
+                        <div className="text-xs text-gray-500">Cód: {detail.product.code}</div>
                       )}
                     </td>
-                    <td className="text-right py-3 px-4 font-mono text-gray-900">{formatCurrency(detail.unitPrice)}</td>
-                    <td className="text-right py-3 px-4 font-mono font-semibold text-gray-900">{formatCurrency(detail.totalAmount)}</td>
+                    <td className="text-right py-1.5 px-2 font-mono text-gray-900 text-xs">{formatCurrency(detail.unitPrice)}</td>
+                    <td className="text-right py-1.5 px-2 font-mono font-semibold text-gray-900 text-xs">{formatCurrency(detail.totalAmount)}</td>
                   </tr>
                 ))}
-                {/* Filas de relleno para mantener altura mínima */}
-                {Array.from({ length: Math.max(0, 8 - sale.details.length) }).map((_, idx) => (
-                  <tr key={`empty-${idx}`} className="border-b border-gray-100">
-                    <td className="py-3 px-4">&nbsp;</td>
-                    <td className="py-3 px-4">&nbsp;</td>
-                    <td className="py-3 px-4">&nbsp;</td>
-                    <td className="py-3 px-4">&nbsp;</td>
+                
+                {/* Agregar líneas vacías para completar 5 líneas mínimo */}
+                {Array.from({ length: Math.max(0, 5 - sale.details.length) }, (_, idx) => (
+                  <tr key={`empty-${idx}`} className={`border-b border-gray-100 ${(sale.details.length + idx) % 2 === 0 ? 'bg-white' : 'bg-gray-50/50'}`}>
+                    <td className="py-1.5 px-2 text-center text-xs">&nbsp;</td>
+                    <td className="py-1.5 px-2 text-xs">&nbsp;</td>
+                    <td className="text-right py-1.5 px-2 text-xs">&nbsp;</td>
+                    <td className="text-right py-1.5 px-2 text-xs">&nbsp;</td>
                   </tr>
                 ))}
               </tbody>
             </table>
           </div>
 
-          {/* Totales y QR en layout moderno */}
-          <div className="flex justify-between items-start gap-8">
+                    {/* Totales y QR compacto */}
+          <div className="flex justify-between items-start gap-3">
             {/* Sección QR Code */}
             <div className="flex-shrink-0">
-              <div className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 text-center border border-gray-200">
-                <div className="w-36 h-36 bg-white rounded-lg shadow-inner border-2 border-dashed border-gray-300 flex items-center justify-center mb-3">
+              <div className="bg-gray-50 rounded-lg p-2 text-center border border-gray-200">
+                <div className="w-20 h-20 bg-white rounded border border-dashed border-gray-300 flex items-center justify-center mb-1.5">
                   <div className="text-center">
-                    <div className="text-lg font-bold text-gray-600 mb-1">QR</div>
-                    <div className="text-xs text-gray-500">
-                      {sale.serial}-{sale.number}
-                    </div>
+                    <div className="text-xs font-bold text-gray-600">QR</div>
+                    <div className="text-xs text-gray-500">{sale.serial}-{sale.number}</div>
                   </div>
                 </div>
-                <p className="text-xs text-gray-600 leading-tight max-w-36">
-                  <span className="font-semibold">Representación impresa</span><br/>
-                  del comprobante electrónico<br/>
-                                     <span className="font-mono text-gray-500">#{sale?.id ? String(sale.id).substring(0, 8) : 'N/A'}</span>
+                <p className="text-xs text-gray-600 leading-tight">
+                  Representación impresa<br/>del comprobante electrónico
                 </p>
               </div>
             </div>
 
             {/* Sección de Totales */}
-            <div className="flex-1 max-w-md">
-              <div className="bg-gradient-to-br from-slate-50 to-blue-50 rounded-xl p-6 border border-gray-200">
-                <h4 className="text-lg font-bold text-gray-800 mb-4 flex items-center">
-                  <span className="w-1 h-5 bg-green-500 rounded-full mr-2"></span>
+            <div className="flex-1 max-w-xs">
+              <div className="bg-white rounded-lg p-2.5 border border-gray-300">
+                <h4 className="text-xs font-bold text-gray-800 mb-1.5 text-center border-b border-blue-500 pb-1">
                   RESUMEN DE IMPORTES
                 </h4>
-                <table className="w-full text-sm">
-                  <tbody className="space-y-2">
-                    {totals.gravada > 0 && (
-                      <tr>
-                        <td className="text-gray-600 py-2">Op. Gravada:</td>
-                        <td className="text-right py-2 font-mono font-semibold text-gray-900">{formatCurrency(totals.gravada)}</td>
-                      </tr>
-                    )}
-                    {totals.exonerada > 0 && (
-                      <tr>
-                        <td className="text-gray-600 py-2">Op. Exonerada:</td>
-                        <td className="text-right py-2 font-mono font-semibold text-gray-900">{formatCurrency(totals.exonerada)}</td>
-                      </tr>
-                    )}
-                    {totals.inafecta > 0 && (
-                      <tr>
-                        <td className="text-gray-600 py-2">Op. Inafecta:</td>
-                        <td className="text-right py-2 font-mono font-semibold text-gray-900">{formatCurrency(totals.inafecta)}</td>
-                      </tr>
-                    )}
-                    {totals.gratuita > 0 && (
-                      <tr>
-                        <td className="text-gray-600 py-2">Op. Gratuita:</td>
-                        <td className="text-right py-2 font-mono font-semibold text-gray-900">{formatCurrency(totals.gratuita)}</td>
-                      </tr>
-                    )}
-                    <tr>
-                      <td className="text-gray-600 py-2">IGV ({sale.igvPercent || company?.igvPercentage || 18}%):</td>
-                      <td className="text-right py-2 font-mono font-semibold text-gray-900">{formatCurrency(totals.igv)}</td>
-                    </tr>
-                    {totals.descuento > 0 && (
-                      <tr>
-                        <td className="text-red-600 py-2">Descuento:</td>
-                        <td className="text-right py-2 font-mono font-semibold text-red-600">- {formatCurrency(totals.descuento)}</td>
-                      </tr>
-                    )}
-                    <tr className="border-t-2 border-gray-300">
-                      <td className="text-gray-800 py-3 font-bold text-lg">TOTAL A PAGAR:</td>
-                      <td className="text-right py-3 font-bold text-xl text-blue-600 font-mono">{formatCurrency(totals.total)}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <div className="space-y-0.5 text-xs">
+                  {/* Subtotal */}
+                  <div className="flex justify-between py-1">
+                    <span className="text-gray-600">Sub Total:</span>
+                    <span className="font-mono font-bold">{formatCurrency(totals.gravada + totals.exonerada + totals.inafecta)}</span>
+                  </div>
+                  
+                  {/* Descuento Global */}
+                  {totals.descuento > 0 && (
+                    <div className="flex justify-between py-1 text-red-600">
+                      <span>Descuento:</span>
+                      <span className="font-mono font-bold">- {formatCurrency(totals.descuento)}</span>
+                    </div>
+                  )}
+                  
+                  {/* Operaciones según SUNAT */}
+                  <div className="flex justify-between py-1 bg-blue-50 px-2 rounded">
+                    <span className="text-blue-700 font-medium">Op. Gravada:</span>
+                    <span className="font-mono font-bold text-blue-700">{formatCurrency(totals.gravada)}</span>
+                  </div>
+                  
+                  {totals.exonerada > 0 && (
+                    <div className="flex justify-between py-1">
+                      <span>Op. Exonerada:</span>
+                      <span className="font-mono">{formatCurrency(totals.exonerada)}</span>
+                    </div>
+                  )}
+                  
+                  {totals.inafecta > 0 && (
+                    <div className="flex justify-between py-1">
+                      <span>Op. Inafecta:</span>
+                      <span className="font-mono">{formatCurrency(totals.inafecta)}</span>
+                    </div>
+                  )}
+                  
+                  {totals.gratuita > 0 && (
+                    <div className="flex justify-between py-1">
+                      <span>Op. Gratuita:</span>
+                      <span className="font-mono">{formatCurrency(totals.gratuita)}</span>
+                    </div>
+                  )}
+                  
+                  {/* IGV */}
+                  <div className="flex justify-between py-1 bg-orange-50 px-2 rounded">
+                    <span className="text-orange-700 font-medium">IGV ({sale.igvPercent || company?.igvPercentage || 18}%):</span>
+                    <span className="font-mono font-bold text-orange-700">{formatCurrency(totals.igv)}</span>
+                  </div>
+                  
+                  {/* Total Final */}
+                  <div className="flex justify-between py-2 px-2 bg-blue-600 text-white rounded mt-2">
+                    <span className="font-bold">TOTAL:</span>
+                    <span className="font-mono font-bold">{formatCurrency(totals.total)}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
-          {/* Importe en letras */}
-          <div className="mt-6 p-4 bg-gradient-to-r from-yellow-50 to-orange-50 rounded-xl border border-orange-200">
-            <p className="text-sm">
+          {/* Importe en letras compacto */}
+          <div className="mt-3 p-2 bg-yellow-50 rounded border border-orange-200">
+            <p className="text-xs">
               <span className="font-bold text-gray-800">SON:</span> 
-              <span className="ml-2 text-gray-700 font-medium uppercase">{numeroALetras(totals.total)}</span>
+              <span className="ml-1 text-gray-700 font-medium uppercase">{numeroALetras(totals.total)}</span>
             </p>
           </div>
 
-          {/* Información adicional en grid */}
-          <div className="mt-6 grid grid-cols-3 gap-6">
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-700 text-sm mb-1">Condición de pago:</p>
-              <p className="text-gray-900 font-medium">{sale.paymentCondition || 'CONTADO'}</p>
+          {/* Información adicional compacta */}
+          <div className="mt-3 grid grid-cols-3 gap-2">
+            <div className="bg-gray-50 rounded p-2">
+              <p className="text-xs text-gray-600">Condición:</p>
+              <p className="text-xs font-medium">{sale.paymentCondition || 'CONTADO'}</p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-700 text-sm mb-1">Vendedor:</p>
-              <p className="text-gray-900 font-medium">{sale.user?.firstName} {sale.user?.lastName}</p>
+            <div className="bg-gray-50 rounded p-2">
+              <p className="text-xs text-gray-600">Vendedor:</p>
+              <p className="text-xs font-medium">{sale.user?.firstName} {sale.user?.lastName}</p>
             </div>
-            <div className="bg-gray-50 rounded-lg p-4">
-              <p className="font-semibold text-gray-700 text-sm mb-1">Estado:</p>
-              <p className="text-gray-900 font-medium">{sale.operationStatus === '2' ? 'EMITIDO' : 'REGISTRADO'}</p>
+            <div className="bg-gray-50 rounded p-2">
+              <p className="text-xs text-gray-600">Estado:</p>
+              <p className="text-xs font-medium">{sale.operationStatus === '2' ? 'EMITIDO' : 'REGISTRADO'}</p>
             </div>
           </div>
 
-          {/* Footer */}
-          <div className="mt-8 pt-6 border-t-2 border-gray-200">
-            <div className="text-center space-y-2">
-              <p className="font-semibold text-gray-700 text-sm">Autorizado mediante Resolución N° 155-2017/SUNAT</p>
-              <p className="text-gray-600 text-sm">Consulte su comprobante en: www.sunat.gob.pe</p>
-              <p className="text-xs text-gray-500 mt-3 font-mono">
-                Hash: {sale?.id ? String(sale.id).substring(0, 16) : 'N/A'}... | Página 1 de 1
+          {/* Footer compacto */}
+          <div className="mt-4 pt-3 border-t border-gray-200">
+            <div className="text-center space-y-1">
+              <p className="text-xs text-gray-600">Autorizado mediante Resolución N° 155-2017/SUNAT</p>
+              <p className="text-xs text-gray-600">www.sunat.gob.pe</p>
+              <p className="text-xs text-gray-500 font-mono">
+                ID: {sale?.id ? String(sale.id).substring(0, 8) : 'N/A'}... | Página 1 de 1
               </p>
             </div>
           </div>
@@ -396,12 +410,12 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
           }
 
           .ticket-content {
-            padding: 3mm !important;
+            padding: 2mm !important;
           }
 
           .ticket-separator {
             border-top: 1px dashed #000 !important;
-            margin: 3mm 0 !important;
+            margin: 2mm 0 !important;
           }
 
           .ticket-table {
@@ -447,23 +461,23 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
       `}} />
 
       <div className="print-container-ticket ticket-container bg-white mx-auto border border-gray-300" style={{ width: '80mm', minHeight: 'auto' }}>
-        <div className="ticket-content p-3">
+        <div className="ticket-content p-2">
           {/* Header con logo */}
                      {company?.logoBase64 && (
-             <div className="ticket-center mb-3">
+             <div className="ticket-center mb-2">
                <img 
                  src={company.logoBase64} 
                  alt="Logo" 
-                 className="h-12 mx-auto"
-                 style={{ maxWidth: '60mm' }}
+                 className="h-8 mx-auto"
+                 style={{ maxWidth: '50mm' }}
                />
              </div>
            )}
 
           {/* Datos de la empresa */}
-          <div className="ticket-center mb-3">
+          <div className="ticket-center mb-2">
             <div className="ticket-bold text-sm">{company?.denomination || 'MI EMPRESA S.A.C.'}</div>
-            <div className="text-xs mt-1">RUC: {company?.ruc || '20123456789'}</div>
+            <div className="text-xs mt-0.5">RUC: {company?.ruc || '20123456789'}</div>
             <div className="text-xs">{company?.address || 'Dirección de la empresa'}</div>
             <div className="text-xs">Tel: {company?.phone || '999999999'}</div>
             <div className="text-xs">{company?.email || 'empresa@email.com'}</div>
@@ -472,15 +486,15 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
           <div className="ticket-separator"></div>
 
           {/* Tipo de documento */}
-          <div className="ticket-center mb-3">
+          <div className="ticket-center mb-2">
             <div className="ticket-bold text-sm">{documentType}</div>
-            <div className="ticket-bold text-lg">{sale.serial}-{sale.number.toString().padStart(8, '0')}</div>
+            <div className="ticket-bold text-base">{sale.serial}-{sale.number.toString().padStart(8, '0')}</div>
           </div>
 
           <div className="ticket-separator"></div>
 
           {/* Datos del cliente */}
-          <div className="mb-3 text-xs">
+          <div className="mb-2 text-xs">
             <div><span className="ticket-bold">CLIENTE:</span> {customerInfo.name}</div>
             <div><span className="ticket-bold">{customerInfo.type}:</span> {customerInfo.document}</div>
             <div><span className="ticket-bold">FECHA:</span> {new Date(sale.emitDate).toLocaleDateString('es-PE')} {formatTime(sale.emitTime)}</div>
@@ -490,7 +504,7 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
           <div className="ticket-separator"></div>
 
           {/* Tabla de productos */}
-          <div className="mb-3">
+          <div className="mb-2">
             <table className="ticket-table w-full text-xs">
               <thead>
                 <tr>
@@ -500,6 +514,7 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
                 </tr>
               </thead>
               <tbody>
+                {/* Mostrar detalles reales */}
                 {sale.details.map((detail: any, idx: number) => (
                   <tr key={idx}>
                     <td style={{ width: '10mm' }}>{detail.quantity}</td>
@@ -510,6 +525,15 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
                     <td className="ticket-right" style={{ width: '20mm' }}>{formatCurrency(detail.totalAmount)}</td>
                   </tr>
                 ))}
+                
+                {/* Agregar líneas vacías para completar 5 líneas mínimo */}
+                {Array.from({ length: Math.max(0, 5 - sale.details.length) }, (_, idx) => (
+                  <tr key={`empty-${idx}`}>
+                    <td style={{ width: '10mm' }}>&nbsp;</td>
+                    <td style={{ width: '45mm' }}>&nbsp;</td>
+                    <td className="ticket-right" style={{ width: '20mm' }}>&nbsp;</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -517,35 +541,55 @@ function TicketFormat({ sale, company }: InvoicePDFProps) {
           <div className="ticket-separator"></div>
 
           {/* Totales */}
-          <div className="text-xs">
-            {totals.gravada > 0 && (
-              <div className="flex justify-between">
-                <span>OP. GRAVADA:</span>
-                <span>{formatCurrency(totals.gravada)}</span>
+          <div className="text-xs space-y-1">
+            {/* Subtotal */}
+            <div className="flex justify-between py-1 border-b border-dashed border-gray-400">
+              <span className="ticket-bold">SUB TOTAL:</span>
+              <span className="ticket-bold">{formatCurrency(totals.gravada + totals.exonerada + totals.inafecta)}</span>
+            </div>
+            
+            {/* Descuento Global (si existe) */}
+            {totals.descuento > 0 && (
+              <div className="flex justify-between py-1">
+                <span className="ticket-bold">DESCUENTO GLOBAL:</span>
+                <span className="ticket-bold">- {formatCurrency(totals.descuento)}</span>
               </div>
             )}
+            
+            <div className="ticket-separator my-1"></div>
+            
+            {/* Operaciones según SUNAT - SIEMPRE mostrar Op. Gravada */}
+            <div className="flex justify-between py-1">
+              <span className="ticket-bold">OP. GRAVADA:</span>
+              <span className="ticket-bold">{formatCurrency(totals.gravada)}</span>
+            </div>
+            
             {totals.exonerada > 0 && (
-              <div className="flex justify-between">
+              <div className="flex justify-between py-1">
                 <span>OP. EXONERADA:</span>
                 <span>{formatCurrency(totals.exonerada)}</span>
               </div>
             )}
+            
             {totals.inafecta > 0 && (
-              <div className="flex justify-between">
+              <div className="flex justify-between py-1">
                 <span>OP. INAFECTA:</span>
                 <span>{formatCurrency(totals.inafecta)}</span>
               </div>
             )}
-            <div className="flex justify-between">
-              <span>IGV ({sale.igvPercent || company?.igvPercentage || 18}%):</span>
-              <span>{formatCurrency(totals.igv)}</span>
-            </div>
-            {totals.descuento > 0 && (
-              <div className="flex justify-between text-red-600">
-                <span>DESCUENTO:</span>
-                <span>- {formatCurrency(totals.descuento)}</span>
+            
+            {totals.gratuita > 0 && (
+              <div className="flex justify-between py-1">
+                <span>OP. GRATUITA:</span>
+                <span>{formatCurrency(totals.gratuita)}</span>
               </div>
             )}
+            
+            {/* IGV - SIEMPRE mostrar */}
+            <div className="flex justify-between py-1">
+              <span className="ticket-bold">IGV ({sale.igvPercent || company?.igvPercentage || 18}%):</span>
+              <span className="ticket-bold">{formatCurrency(totals.igv)}</span>
+            </div>
           </div>
 
           <div className="ticket-double-line"></div>

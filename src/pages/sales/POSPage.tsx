@@ -421,86 +421,70 @@ export default function POSPage() {
   // FUNCIONES DE CÁLCULO
   // =============================================
   
-  // Calcular precio sin IGV desde precio con IGV
+  // Calcular precio sin IGV desde precio con IGV (más preciso)
   const calculateUnitValue = (unitPrice: number): number => {
     return Number((unitPrice / igvFactor).toFixed(6))
   }
 
-  // Actualizar totales de un item
-  const updateCartItemTotals = (items: CartItem[], index: number) => {
-    const item = items[index]
-    
-    // Calcular totales según tipo de afectación
-    const affectationCode = item.product.typeAffectation.code
-    
-    if (affectationCode === '10') { // Gravado - Operación Onerosa
-      // El precio unitario ya incluye IGV
-      item.totalAmount = item.unitPrice * item.quantity // Total con IGV
-      item.unitValue = calculateUnitValue(item.unitPrice) // Precio sin IGV
-      item.totalValue = item.unitValue * item.quantity // Subtotal sin IGV
-      item.totalIgv = item.totalAmount - item.totalValue // IGV
-    } else {
-      // Para otros tipos de afectación (exonerado, inafecto, gratuito)
-      item.totalAmount = item.unitPrice * item.quantity
-      item.unitValue = item.unitPrice
-      item.totalValue = item.totalAmount
-      item.totalIgv = 0
-    }
-  }
+
 
   // Calcular totales generales
   const calculateTotals = () => {
-    let subtotal = 0
-    let totalTaxable = 0
-    let totalExempt = 0
-    let totalUnaffected = 0
-    let totalFree = 0
-    let totalIgv = 0
+    let totalTaxable = 0    // Op. Gravada (sin IGV)
+    let totalExempt = 0     // Op. Exonerada
+    let totalUnaffected = 0 // Op. Inafecta  
+    let totalFree = 0       // Op. Gratuita
+    let totalIgv = 0        // IGV total
 
-    cartItems.forEach(item => {
-      const affectationCode = item.product.typeAffectation.code
+    cartItems.forEach((item) => {
+      // Convertir a string para comparación segura
+      const affectationCode = String(item.product.typeAffectation.code)
       
-      switch(affectationCode) {
-        case '10': // Gravado - Operación Onerosa
-          totalTaxable += item.totalValue
-          totalIgv += item.totalIgv
-          break
-        case '20': // Exonerado - Operación Onerosa
-          totalExempt += item.totalValue
-          break
-        case '30': // Inafecto - Operación Onerosa
-          totalUnaffected += item.totalValue
-          break
-        case '40': // Gratuito
-          totalFree += item.totalValue
-          break
+      // Determinar tipo de operación y acumular
+      if (affectationCode === '10') { // Gravado
+        totalTaxable += item.totalValue  // Sin IGV
+        totalIgv += item.totalIgv        // IGV calculado
+      } else if (affectationCode === '20') { // Exonerado
+        totalExempt += item.totalValue
+      } else if (affectationCode === '30') { // Inafecto
+        totalUnaffected += item.totalValue
+      } else if (affectationCode === '40') { // Gratuito
+        totalFree += item.totalValue
       }
-      
-      subtotal += item.totalAmount
     })
+
+    // SUBTOTAL = suma de bases imponibles (sin IGV ni descuentos)
+    const subtotal = totalTaxable + totalExempt + totalUnaffected + totalFree
+
+    // Total antes de descuentos
+    const totalBeforeDiscount = subtotal + totalIgv
 
     // Calcular descuento
     let discountAmount = 0
     if (globalDiscount > 0) {
       if (discountType === 'percent') {
-        discountAmount = subtotal * (globalDiscount / 100)
+        discountAmount = totalBeforeDiscount * (globalDiscount / 100)
       } else {
         discountAmount = globalDiscount
       }
     }
 
-    const totalAmount = subtotal - discountAmount
+    const totalAmount = totalBeforeDiscount - discountAmount
 
-    return {
-      subtotal,
-      totalTaxable,
+    const result = {
+      subtotal,         // Suma de todas las bases (sin IGV)
+      totalTaxable,     // Solo Op. Gravada (para backend - sin IGV)
       totalExempt,
       totalUnaffected,
       totalFree,
-      totalIgv,
+      totalIgv,         // IGV total calculado
       discountAmount,
       totalAmount
     }
+    
+    console.log('🔍 calculateTotals - Resultado:', result)
+    
+    return result
   }
 
   // =============================================
@@ -556,7 +540,7 @@ export default function POSPage() {
     }
   }, [company?.id])
 
-  // Buscar por código de barras - CORREGIDO
+  // Buscar por código de barras - SIMPLIFICADO Y CORREGIDO
   const searchByBarcode = useCallback(async (barcode: string) => {
     if (!barcode) return
 
@@ -569,39 +553,73 @@ export default function POSPage() {
       })
       
       if (searchProducts && searchProducts.length > 0) {
-        // Usar callback para asegurar que trabajamos con el estado más actual
+        const product = searchProducts[0]
+        
         setCartItems(prevItems => {
-          const existingIndex = prevItems.findIndex(item => item.product.id === searchProducts[0].id)
+          const existingIndex = prevItems.findIndex(item => item.product.id === product.id)
           
           if (existingIndex >= 0) {
-            // Actualizar cantidad del item existente CREANDO UN NUEVO OBJETO
-            const newItems = prevItems.map((item, index) => {
-              if (index === existingIndex) {
-                const updatedItem = {
-                  ...item,
-                  quantity: item.quantity + 1
-                }
-                updateCartItemTotals([updatedItem], 0) // Actualizar totales para el item actualizado
-                return updatedItem
-              }
-              return item
-            })
-            return newItems
-          } else {
-            // Agregar nuevo item
-            const newItem: CartItem = {
-              product: searchProducts[0],
-              quantity: 1,
-              unitPrice: searchProducts[0].unitPrice,
-              unitValue: calculateUnitValue(searchProducts[0].unitPrice),
-              totalValue: 0,
-              totalIgv: 0,
-              totalAmount: 0
+            // Actualizar cantidad del item existente
+            const newItems = [...prevItems]
+            const newQuantity = newItems[existingIndex].quantity + 1
+            
+            // Calcular totales directamente aquí
+            const affectationCode = String(product.typeAffectation.code)
+            let totalAmount, unitValue, totalValue, totalIgv
+            
+            if (affectationCode === '10') { // Gravado - precio incluye IGV
+              totalAmount = product.unitPrice * newQuantity  // Total con IGV
+              unitValue = Number((product.unitPrice / igvFactor).toFixed(6))  // Precio sin IGV
+              totalValue = Number((unitValue * newQuantity).toFixed(2))  // Total sin IGV
+              totalIgv = Number((totalAmount - totalValue).toFixed(2))  // IGV calculado
+            } else { // No gravado - precio sin IGV
+              totalAmount = product.unitPrice * newQuantity
+              unitValue = product.unitPrice
+              totalValue = totalAmount
+              totalIgv = 0
             }
             
-            const newItems = [...prevItems, newItem]
-            updateCartItemTotals(newItems, newItems.length - 1)
+            newItems[existingIndex] = {
+              ...newItems[existingIndex],
+              quantity: newQuantity,
+              unitValue: unitValue,
+              totalValue: totalValue,
+              totalIgv: totalIgv,
+              totalAmount: totalAmount
+            }
+            
+
             return newItems
+          } else {
+            // Agregar nuevo item con cálculos inmediatos
+            const affectationCode = String(product.typeAffectation.code)
+            let totalAmount, unitValue, totalValue, totalIgv
+            
+            if (affectationCode === '10') { // Gravado - precio incluye IGV
+              totalAmount = product.unitPrice * 1  // Total con IGV
+              unitValue = Number((product.unitPrice / igvFactor).toFixed(6))  // Precio sin IGV
+              totalValue = Number((unitValue * 1).toFixed(2))  // Total sin IGV
+              totalIgv = Number((totalAmount - totalValue).toFixed(2))  // IGV calculado
+            } else { // No gravado - precio sin IGV
+              totalAmount = product.unitPrice * 1
+              unitValue = product.unitPrice
+              totalValue = totalAmount
+              totalIgv = 0
+            }
+            
+            const newItem: CartItem = {
+              product: product,
+              quantity: 1,
+              unitPrice: product.unitPrice,
+              unitValue: unitValue,
+              totalValue: totalValue,
+              totalIgv: totalIgv,
+              totalAmount: totalAmount
+            }
+            
+
+            
+            return [...prevItems, newItem]
           }
         })
         
@@ -676,50 +694,104 @@ export default function POSPage() {
     setTimeout(() => quantityDialogRef.current?.select(), 100)
   }
 
-  // Agregar/actualizar producto desde diálogo
+  // Agregar/actualizar producto desde diálogo - SIMPLIFICADO
   const addProductFromDialog = () => {
     if (!editingProduct) return
 
-    const existingIndex = cartItems.findIndex(item => item.product.id === editingProduct.product.id)
-    
-    if (existingIndex >= 0) {
-      // Actualizar item existente
-      const newItems = [...cartItems]
-      newItems[existingIndex].quantity = editingProduct.quantity
-      newItems[existingIndex].unitPrice = editingProduct.unitPrice
-      newItems[existingIndex].unitValue = calculateUnitValue(editingProduct.unitPrice)
-      updateCartItemTotals(newItems, existingIndex)
-      setCartItems(newItems)
-    } else {
-      // Agregar nuevo item
-      const newItem: CartItem = {
-        product: editingProduct.product,
-        quantity: editingProduct.quantity,
-        unitPrice: editingProduct.unitPrice,
-        unitValue: calculateUnitValue(editingProduct.unitPrice),
-        totalValue: 0,
-        totalIgv: 0,
-        totalAmount: 0
+    setCartItems(prevItems => {
+      const existingIndex = prevItems.findIndex(item => item.product.id === editingProduct.product.id)
+      const product = editingProduct.product
+      const quantity = editingProduct.quantity
+      const unitPrice = editingProduct.unitPrice
+      
+      // Calcular totales directamente
+      const affectationCode = String(product.typeAffectation.code)
+      let totalAmount, unitValue, totalValue, totalIgv
+      
+      if (affectationCode === '10') { // Gravado - precio incluye IGV
+        totalAmount = unitPrice * quantity  // Total con IGV
+        unitValue = Number((unitPrice / igvFactor).toFixed(6))  // Precio sin IGV
+        totalValue = Number((unitValue * quantity).toFixed(2))  // Total sin IGV
+        totalIgv = Number((totalAmount - totalValue).toFixed(2))  // IGV calculado
+      } else { // No gravado - precio sin IGV
+        totalAmount = unitPrice * quantity
+        unitValue = unitPrice
+        totalValue = totalAmount
+        totalIgv = 0
       }
       
-      const newItems = [...cartItems, newItem]
-      updateCartItemTotals(newItems, newItems.length - 1)
-      setCartItems(newItems)
-    }
+      if (existingIndex >= 0) {
+        // Actualizar item existente
+        const newItems = [...prevItems]
+        newItems[existingIndex] = {
+          ...newItems[existingIndex],
+          quantity: quantity,
+          unitPrice: unitPrice,
+          unitValue: unitValue,
+          totalValue: totalValue,
+          totalIgv: totalIgv,
+          totalAmount: totalAmount
+        }
+        return newItems
+      } else {
+        // Agregar nuevo item
+        const newItem: CartItem = {
+          product: product,
+          quantity: quantity,
+          unitPrice: unitPrice,
+          unitValue: unitValue,
+          totalValue: totalValue,
+          totalIgv: totalIgv,
+          totalAmount: totalAmount
+        }
+        
+        return [...prevItems, newItem]
+      }
+    })
     
     setShowProductDialog(false)
     setEditingProduct(null)
     productSearchRef.current?.focus()
   }
 
-  // Actualizar cantidad de item
+  // Actualizar cantidad de item - SIMPLIFICADO
   const updateItemQuantity = (index: number, newQuantity: number) => {
     if (newQuantity <= 0) return
     
-    const newItems = [...cartItems]
-    newItems[index].quantity = newQuantity
-    updateCartItemTotals(newItems, index)
-    setCartItems(newItems)
+    setCartItems(prevItems => {
+      const newItems = [...prevItems]
+      const item = newItems[index]
+      const product = item.product
+      
+      // Calcular totales directamente
+      const affectationCode = String(product.typeAffectation.code)
+      let totalAmount, unitValue, totalValue, totalIgv
+      
+      if (affectationCode === '10') { // Gravado - precio incluye IGV
+        totalAmount = item.unitPrice * newQuantity  // Total con IGV
+        unitValue = Number((item.unitPrice / igvFactor).toFixed(6))  // Precio sin IGV
+        totalValue = Number((unitValue * newQuantity).toFixed(2))  // Total sin IGV
+        totalIgv = Number((totalAmount - totalValue).toFixed(2))  // IGV calculado
+      } else { // No gravado - precio sin IGV
+        totalAmount = item.unitPrice * newQuantity
+        unitValue = item.unitPrice
+        totalValue = totalAmount
+        totalIgv = 0
+      }
+      
+      newItems[index] = {
+        ...item,
+        quantity: newQuantity,
+        unitValue: unitValue,
+        totalValue: totalValue,
+        totalIgv: totalIgv,
+        totalAmount: totalAmount
+      }
+      
+
+      
+      return newItems
+    })
   }
 
   // Eliminar item del carrito
@@ -813,6 +885,8 @@ export default function POSPage() {
     setProcessing(true)
     const currentTime = new Date()
     
+
+    
     try {
       const operationData = {
         documentId: selectedDocument?.id,
@@ -845,8 +919,8 @@ export default function POSPage() {
         })),
         payments: paymentsList || []
       }
-
-    const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
+      
+      const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
       
     if (response.createOperation.success) {
       const operation = response.createOperation.operation
@@ -1261,17 +1335,15 @@ return (
                <tr className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white">
                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Cant.</th>
                  <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Descripción</th>
-                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">P. Unit</th>
-                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Subtotal</th>
-                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">IGV</th>
-                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Total</th>
+                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">P.U.</th>
+                 <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Importe</th>
                  <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase tracking-wider w-12"></th>
                </tr>
              </thead>
              <tbody className="divide-y divide-slate-100">
                {cartItems.length === 0 ? (
                  <tr>
-                   <td colSpan={7} className="px-6 py-16 text-center text-slate-500">
+                   <td colSpan={5} className="px-6 py-16 text-center text-slate-500">
                      <div className="flex flex-col items-center">
                        <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-full p-4 mb-4">
                          <Package className="w-12 h-12 text-slate-400" />
@@ -1337,16 +1409,6 @@ return (
                        </span>
                      </td>
                      <td className="px-3 py-2 text-right">
-                       <span className="font-medium text-xs font-mono tracking-tight">
-                         S/ {(item.totalValue || 0).toFixed(2)}
-                       </span>
-                     </td>
-                     <td className="px-3 py-2 text-right">
-                       <span className="font-medium text-xs text-slate-600 font-mono tracking-tight">
-                         S/ {(item.totalIgv || 0).toFixed(2)}
-                       </span>
-                     </td>
-                     <td className="px-3 py-2 text-right">
                        <span className="font-bold text-sm text-blue-600 font-mono tracking-tight">
                          S/ {(item.totalAmount || 0).toFixed(2)}
                        </span>
@@ -1364,25 +1426,7 @@ return (
                  ))
                )}
              </tbody>
-             {cartItems.length > 0 && (
-               <tfoot className="bg-gradient-to-r from-slate-100 to-slate-200 border-t border-slate-300">
-                 <tr>
-                   <td colSpan={3} className="px-3 py-2.5 text-right font-bold text-xs tracking-tight">
-                     Totales:
-                   </td>
-                   <td className="px-3 py-2.5 text-right font-bold text-xs font-mono">
-                     S/ {cartItems.reduce((acc, item) => acc + item.totalValue, 0).toFixed(2)}
-                   </td>
-                   <td className="px-3 py-2.5 text-right font-bold text-xs font-mono">
-                     S/ {cartItems.reduce((acc, item) => acc + item.totalIgv, 0).toFixed(2)}
-                   </td>
-                   <td className="px-3 py-2.5 text-right font-bold text-sm text-blue-600 font-mono">
-                     S/ {cartItems.reduce((acc, item) => acc + item.totalAmount, 0).toFixed(2)}
-                   </td>
-                   <td></td>
-                 </tr>
-               </tfoot>
-             )}
+
            </table>
          </div>
        </div>
@@ -1448,14 +1492,14 @@ return (
            <span className="font-bold font-mono">S/ {(totals.subtotal || 0).toFixed(2)}</span>
          </div>
 
-         {/* Tipos de operación */}
+         {/* Tipos de operación detallados */}
          <div className="space-y-1">
-           {totals.totalTaxable > 0 && (
-             <div className="flex justify-between text-xs">
-               <span className="text-slate-500">Op. Gravada:</span>
-               <span className="text-slate-700 font-mono">S/ {(totals.totalTaxable || 0).toFixed(2)}</span>
-             </div>
-           )}
+           {/* Op. Gravada (siempre mostrar si hay productos gravados o si es > 0) */}
+           <div className="flex justify-between text-xs">
+             <span className="text-slate-500">Op. Gravada:</span>
+             <span className="text-slate-700 font-mono">S/ {(totals.totalTaxable || 0).toFixed(2)}</span>
+           </div>
+           
            {totals.totalExempt > 0 && (
              <div className="flex justify-between text-xs">
                <span className="text-slate-500">Op. Exonerada:</span>
