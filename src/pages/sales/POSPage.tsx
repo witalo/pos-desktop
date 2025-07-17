@@ -1,6 +1,9 @@
 ﻿// src/pages/sales/POSPage.tsx - Versión con estilo moderno mejorado
 import { useState, useEffect, useRef, useCallback } from 'react'
 import { useNavigate } from 'react-router-dom'
+// Agregar esta importación al inicio de POSPage.tsx
+import { PrintService } from '../../services/printService'
+import PrintSettings from '../../components/PrintSettings'
 import { 
   Search, 
   Trash2, 
@@ -279,6 +282,8 @@ export default function POSPage() {
 
   // Timer para ocultar resultados
   const hideResultsTimer = useRef<NodeJS.Timeout>()
+  // En tu componente
+  const [showPrintSettings, setShowPrintSettings] = useState(false)
 
   // =============================================
   // EFECTOS
@@ -829,115 +834,180 @@ export default function POSPage() {
     } else {
       // Procesar directamente sin pagos
       processOperation([])
+    }   
+  }
+  // Modificar la función processOperation para incluir impresión automática:
+const processOperation = async (paymentsList: Payment[]) => {
+  setProcessing(true)
+  const currentTime = new Date()
+  
+  try {
+    const operationData = {
+      documentId: selectedDocument?.id,
+      serialId: selectedSerial?.id,
+      operationType: 'S',
+      operationDate: emissionDate,
+      emitDate: emissionDate,
+      emitTime: currentTime.toTimeString().split(' ')[0],
+      personId: customer?.id,
+      userId: user?.id,
+      companyId: company?.id,
+      currency: 'PEN',
+      globalDiscountPercent: discountType === 'percent' ? globalDiscount : 0,
+      globalDiscount: discountType === 'amount' ? globalDiscount : 0,
+      totalDiscount: totals.discountAmount,
+      igvPercent: igvPercent,
+      igvAmount: totals.totalIgv,
+      totalTaxable: totals.totalTaxable,
+      totalUnaffected: totals.totalUnaffected,
+      totalExempt: totals.totalExempt,
+      totalFree: totals.totalFree,
+      totalAmount: totals.totalAmount,
+      items: cartItems.map(item => ({
+        productId: item.product.id,
+        quantity: item.quantity,
+        unitValue: item.unitValue,
+        unitPrice: item.unitPrice,
+        discountPercentage: 0,
+        typeAffectationId: parseInt(item.product.typeAffectation.code)
+      })),
+      payments: paymentsList || []
     }
     
-    // try {
-    //   const operationData = {
-    //     documentId: selectedDocument?.id,
-    //     serialId: selectedSerial?.id,
-    //     operationType: 'S',
-    //     operationDate: emissionDate,
-    //     emitDate: emissionDate,
-    //     emitTime: currentTime.toTimeString().split(' ')[0],
-    //     personId: customer.id,
-    //     userId: user?.id,
-    //     companyId: company?.id,
-    //     currency: 'PEN',
-    //     globalDiscountPercent: discountType === 'percent' ? globalDiscount : 0,
-    //     globalDiscount: discountType === 'amount' ? globalDiscount : 0,
-    //     totalDiscount: totals.discountAmount,
-    //     igvPercent: igvPercent,
-    //     igvAmount: totals.totalIgv,
-    //     totalTaxable: totals.totalTaxable,
-    //     totalUnaffected: totals.totalUnaffected,
-    //     totalExempt: totals.totalExempt,
-    //     totalFree: totals.totalFree,
-    //     totalAmount: totals.totalAmount,
-    //     items: cartItems.map(item => ({
-    //       productId: item.product.id,
-    //       quantity: item.quantity,
-    //       unitValue: item.unitValue,
-    //       unitPrice: item.unitPrice,
-    //       discountPercentage: 0,
-    //       typeAffectationId: parseInt(item.product.typeAffectation.code)
-    //     }))
-    //   }
-
-    //   const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
+    const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
+    
+    if (response.createOperation.success) {
+      const operation = response.createOperation.operation
       
-    //   if (response.createOperation.success) {
-    //     const operation = response.createOperation.operation
-    //     alert(`Venta ${operation.serial}-${operation.number} guardada exitosamente`)
-    //     // Redirigir a la lista de ventas
-    //     navigate('/sales')
-    //   } else {
-    //     alert(`Error: ${response.createOperation.message}`)
-    //   }
-    // } catch (error) {
-    //   console.error('Error al guardar venta:', error)
-    //   alert('Error al procesar la venta')
-    // } finally {
-    //   setProcessing(false)
-    // }
-  }
-  // Procesar la operación con los pagos
-  const processOperation = async (paymentsList: Payment[]) => {
-    setProcessing(true)
-    const currentTime = new Date()
-    
-
-    
-    try {
-      const operationData = {
-        documentId: selectedDocument?.id,
-        serialId: selectedSerial?.id,
-        operationType: 'S',
-        operationDate: emissionDate,
-        emitDate: emissionDate,
-        emitTime: currentTime.toTimeString().split(' ')[0],
-        personId: customer?.id,
-        userId: user?.id,
-        companyId: company?.id,
-        currency: 'PEN',
-        globalDiscountPercent: discountType === 'percent' ? globalDiscount : 0,
-        globalDiscount: discountType === 'amount' ? globalDiscount : 0,
-        totalDiscount: totals.discountAmount,
-        igvPercent: igvPercent,
-        igvAmount: totals.totalIgv,
-        totalTaxable: totals.totalTaxable,
-        totalUnaffected: totals.totalUnaffected,
-        totalExempt: totals.totalExempt,
-        totalFree: totals.totalFree,
-        totalAmount: totals.totalAmount,
-        items: cartItems.map(item => ({
-          productId: item.product.id,
+      // Preparar los datos de la venta para impresión
+      const saleForPrint = {
+        id: operation.id,
+        serial: operation.serial,
+        number: operation.number,
+        operationDate: operationData.operationDate,
+        emitDate: operationData.emitDate,
+        emitTime: operationData.emitTime,
+        operationStatus: '2', // Emitido
+        currency: operationData.currency,
+        totalAmount: operationData.totalAmount,
+        totalTaxable: operationData.totalTaxable,
+        totalUnaffected: operationData.totalUnaffected,
+        totalExempt: operationData.totalExempt,
+        totalFree: operationData.totalFree,
+        igvAmount: operationData.igvAmount,
+        igvPercent: operationData.igvPercent,
+        globalDiscount: operationData.globalDiscount,
+        globalDiscountPercent: operationData.globalDiscountPercent,
+        totalDiscount: operationData.totalDiscount,
+        person: customer,
+        user: user,
+        details: cartItems.map(item => ({
+          description: item.product.description,
           quantity: item.quantity,
           unitValue: item.unitValue,
           unitPrice: item.unitPrice,
-          discountPercentage: 0,
-          typeAffectationId: parseInt(item.product.typeAffectation.code)
+          totalValue: item.totalValue,
+          totalIgv: item.totalIgv,
+          totalAmount: item.totalAmount,
+          product: {
+            id: item.product.id,
+            code: item.product.code,
+            description: item.product.description,
+            typeAffectation: item.product.typeAffectation,
+            unit: item.product.unit
+          }
         })),
-        payments: paymentsList || []
+        paymentSet: paymentsList || []
       }
       
-      const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
+      // IMPRIMIR AUTOMÁTICAMENTE EN SEGUNDO PLANO
+      console.log('Iniciando impresión automática...')
+      PrintService.printSale(saleForPrint, company).then(printResult => {
+        if (printResult.success) {
+          console.log('✅ Venta impresa exitosamente')
+        } else {
+          console.error('❌ Error al imprimir:', printResult.error)
+          // Opcional: mostrar notificación no intrusiva de error
+          // No bloquear el flujo principal
+        }
+      }).catch(error => {
+        console.error('❌ Error crítico al imprimir:', error)
+      })
       
-    if (response.createOperation.success) {
-      const operation = response.createOperation.operation
+      // Mostrar mensaje de éxito y continuar
       alert(`Venta ${operation.serial}-${operation.number} guardada exitosamente`)
+      
       // Redirigir a la lista de ventas
       navigate('/sales')
     } else {
       alert(`Error: ${response.createOperation.message}`)
     }
-    } catch (error) {
-      console.error('Error al guardar venta:', error)
-      alert('Error al procesar la venta')
-    } finally {
-      setProcessing(false)
-      setShowPaymentDialog(false)
-    }
+  } catch (error) {
+    console.error('Error al guardar venta:', error)
+    alert('Error al procesar la venta')
+  } finally {
+    setProcessing(false)
+    setShowPaymentDialog(false)
   }
+}
+  // Procesar la operación con los pagos
+  // const processOperation = async (paymentsList: Payment[]) => {
+  //   setProcessing(true)
+  //   const currentTime = new Date()
+    
+
+    
+  //   try {
+  //     const operationData = {
+  //       documentId: selectedDocument?.id,
+  //       serialId: selectedSerial?.id,
+  //       operationType: 'S',
+  //       operationDate: emissionDate,
+  //       emitDate: emissionDate,
+  //       emitTime: currentTime.toTimeString().split(' ')[0],
+  //       personId: customer?.id,
+  //       userId: user?.id,
+  //       companyId: company?.id,
+  //       currency: 'PEN',
+  //       globalDiscountPercent: discountType === 'percent' ? globalDiscount : 0,
+  //       globalDiscount: discountType === 'amount' ? globalDiscount : 0,
+  //       totalDiscount: totals.discountAmount,
+  //       igvPercent: igvPercent,
+  //       igvAmount: totals.totalIgv,
+  //       totalTaxable: totals.totalTaxable,
+  //       totalUnaffected: totals.totalUnaffected,
+  //       totalExempt: totals.totalExempt,
+  //       totalFree: totals.totalFree,
+  //       totalAmount: totals.totalAmount,
+  //       items: cartItems.map(item => ({
+  //         productId: item.product.id,
+  //         quantity: item.quantity,
+  //         unitValue: item.unitValue,
+  //         unitPrice: item.unitPrice,
+  //         discountPercentage: 0,
+  //         typeAffectationId: parseInt(item.product.typeAffectation.code)
+  //       })),
+  //       payments: paymentsList || []
+  //     }
+      
+  //     const response = await graphqlRequest(CREATE_OPERATION_MUTATION, operationData)
+      
+  //   if (response.createOperation.success) {
+  //     const operation = response.createOperation.operation
+  //     alert(`Venta ${operation.serial}-${operation.number} guardada exitosamente`)
+  //     // Redirigir a la lista de ventas
+  //     navigate('/sales')
+  //   } else {
+  //     alert(`Error: ${response.createOperation.message}`)
+  //   }
+  //   } catch (error) {
+  //     console.error('Error al guardar venta:', error)
+  //     alert('Error al procesar la venta')
+  //   } finally {
+  //     setProcessing(false)
+  //     setShowPaymentDialog(false)
+  //   }
+  // }
 
   // Agregar pago
   const addPayment = () => {
@@ -2123,6 +2193,13 @@ return (
             Confirmar
           </button>
         </div>
+        <button onClick={() => setShowPrintSettings(true)}>
+          Configurar Impresión
+        </button>
+          <PrintSettings 
+            isOpen={showPrintSettings}
+            onClose={() => setShowPrintSettings(false)}
+          />
       </div>
     </div>
   )}

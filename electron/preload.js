@@ -32,5 +32,19 @@ contextBridge.exposeInMainWorld('electronAPI', {
 
   // Información del sistema
   platform: process.platform,
-  version: process.versions.electron
+  version: process.versions.electron,
+  // Agregar estas APIs al objeto electronAPI en tu preload.js
+
+  // APIs de impresión
+  print: {
+    // Impresión silenciosa
+    silentPrint: (htmlContent, options) => ipcRenderer.invoke('silent-print', htmlContent, options),
+    
+    // Impresión con diálogo
+    printWithDialog: (htmlContent, options) => ipcRenderer.invoke('print-with-dialog', htmlContent, options),
+    
+    // Obtener impresoras disponibles
+    getPrinters: () => ipcRenderer.invoke('get-printers')
+  }  
 });
+

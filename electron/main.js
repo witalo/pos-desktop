@@ -243,3 +243,126 @@ ipcMain.handle('storage-delete', async (event, key) => {
   store.delete(key);
   return true;
 });
+
+// IMPRESION
+// Agregar estos handlers al final de tu main.js, después de los otros ipcMain.handle
+
+// Handler para impresión silenciosa
+ipcMain.handle('silent-print', async (event, htmlContent, options = {}) => {
+  try {
+    // Crear una ventana oculta para imprimir
+    const printWindow = new BrowserWindow({
+      show: false,
+      width: options.format === 'T' ? 300 : 800,
+      height: options.format === 'T' ? 600 : 1100,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    });
+
+    // Cargar el contenido HTML
+    await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+
+    // Esperar un poco para que se renderice
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    // Configuración de impresión según el formato
+    const printOptions = {
+      silent: true, // Impresión silenciosa
+      printBackground: true,
+      color: true,
+      margins: {
+        marginType: options.format === 'T' ? 'none' : 'default'
+      },
+      pageSize: options.format === 'T' ? {
+        width: 80000, // 80mm en micrones
+        height: 297000 // altura variable para ticket
+      } : 'A4',
+      scaleFactor: options.format === 'T' ? 100 : 100,
+      landscape: false
+    };
+
+    // Intentar imprimir
+    return new Promise((resolve, reject) => {
+      printWindow.webContents.print(printOptions, (success, failureReason) => {
+        printWindow.close();
+        
+        if (success) {
+          resolve({ success: true });
+        } else {
+          // Si falla la impresión silenciosa, mostrar diálogo
+          if (failureReason === 'cancelled') {
+            resolve({ success: false, showDialog: true });
+          } else {
+            reject(new Error(failureReason));
+          }
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error('Error en impresión silenciosa:', error);
+    return { success: false, error: error.message, showDialog: true };
+  }
+});
+
+// Handler para impresión con diálogo (fallback)
+ipcMain.handle('print-with-dialog', async (event, htmlContent, options = {}) => {
+  try {
+    const printWindow = new BrowserWindow({
+      show: false,
+      width: options.format === 'T' ? 300 : 800,
+      height: options.format === 'T' ? 600 : 1100,
+      webPreferences: {
+        nodeIntegration: false,
+        contextIsolation: true
+      }
+    });
+
+    await printWindow.loadURL(`data:text/html;charset=utf-8,${encodeURIComponent(htmlContent)}`);
+    await new Promise(resolve => setTimeout(resolve, 500));
+
+    const printOptions = {
+      silent: false, // Mostrar diálogo
+      printBackground: true,
+      color: true,
+      margins: {
+        marginType: options.format === 'T' ? 'none' : 'default'
+      },
+      pageSize: options.format === 'T' ? 'custom' : 'A4',
+      landscape: false
+    };
+
+    return new Promise((resolve, reject) => {
+      printWindow.webContents.print(printOptions, (success, failureReason) => {
+        printWindow.close();
+        
+        if (success) {
+          resolve({ success: true });
+        } else {
+          reject(new Error(failureReason || 'Impresión cancelada'));
+        }
+      });
+    });
+    
+  } catch (error) {
+    console.error('Error en impresión con diálogo:', error);
+    return { success: false, error: error.message };
+  }
+});
+
+// Handler para obtener impresoras disponibles
+ipcMain.handle('get-printers', async () => {
+  try {
+    const window = BrowserWindow.getFocusedWindow() || BrowserWindow.getAllWindows()[0];
+    if (window) {
+      const printers = await window.webContents.getPrintersAsync();
+      return printers;
+    }
+    return [];
+  } catch (error) {
+    console.error('Error obteniendo impresoras:', error);
+    return [];
+  }
+});

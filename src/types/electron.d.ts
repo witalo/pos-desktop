@@ -1,4 +1,24 @@
 // src/types/electron.d.ts
+interface PrintOptions {
+  format: 'A' | 'T'
+  color?: string
+}
+
+interface PrintResult {
+  success: boolean
+  error?: string
+  showDialog?: boolean
+}
+
+interface Printer {
+  name: string
+  displayName: string
+  description: string
+  status: number
+  isDefault: boolean
+  options: any
+}
+
 export interface ElectronAPI {
   // Almacenamiento de empresa
   saveCompanyData: (companyData: any) => Promise<{ success: boolean; error?: string }>;
@@ -29,6 +49,13 @@ export interface ElectronAPI {
   // Sistema
   platform: string;
   version: string;
+  
+  // Nuevas APIs de impresión
+  print: {
+    silentPrint: (htmlContent: string, options: PrintOptions) => Promise<PrintResult>
+    printWithDialog: (htmlContent: string, options: PrintOptions) => Promise<PrintResult>
+    getPrinters: () => Promise<Printer[]>
+  }
 }
 
 declare global {
@@ -36,3 +63,4 @@ declare global {
     electronAPI: ElectronAPI;
   }
 }
+export {}
