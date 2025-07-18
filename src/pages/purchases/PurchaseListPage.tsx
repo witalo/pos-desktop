@@ -250,6 +250,7 @@ export default function PurchaseListPage() {
         return <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded-lg text-xs font-medium">Desconocido</span>
     }
   }
+  
 
   return (
     <div className="h-full bg-slate-50 flex flex-col">

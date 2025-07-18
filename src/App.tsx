@@ -14,6 +14,8 @@ import DashboardLayout from './components/layout/DashboardLayout'
 import HomePage from './pages/home/HomePage'
 import POSPage from './pages/sales/POSPage'
 import SalesListPage from './pages/sales/SalesListPage'
+import PurchaseListPage from './pages/purchases/PurchaseListPage'
+import PurchasePage from './pages/purchases/PurchasePage'
 
 // Componente de protección de rutas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -71,7 +73,8 @@ export default function App() {
           <Route path="pos" element={<POSPage />} />
           
           {/* Otras rutas futuras */}
-          <Route path="purchases" element={<div className="p-8"><h1 className="text-2xl font-bold">Compras - En desarrollo</h1></div>} />
+          <Route path="purchases" element={<PurchaseListPage />} />
+          <Route path="purchases/new" element={<PurchasePage />} />
           <Route path="inventory" element={<div className="p-8"><h1 className="text-2xl font-bold">Inventario - En desarrollo</h1></div>} />
           <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Reportes - En desarrollo</h1></div>} />
           <Route path="customers" element={<div className="p-8"><h1 className="text-2xl font-bold">Clientes - En desarrollo</h1></div>} />

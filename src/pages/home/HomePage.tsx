@@ -10,7 +10,8 @@ import {
   ShoppingCart,
   ChevronRight,
   ArrowUpRight,
-  ArrowDownRight
+  ArrowDownRight,
+  ShoppingBag
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -64,6 +65,18 @@ export default function HomePage() {
       icon: FileText, 
       color: 'bg-gradient-to-r from-emerald-600 to-emerald-700',
       action: () => navigate('/sales')
+    },
+    { 
+      title: 'Nueva Compra', 
+      icon: ShoppingBag,  // Asegúrate de importar ShoppingBag de lucide-react
+      color: 'bg-gradient-to-r from-purple-600 to-purple-700',
+      action: () => navigate('/purchases/new')
+    },
+    { 
+      title: 'Ver Compras', 
+      icon: FileText, 
+      color: 'bg-gradient-to-r from-orange-600 to-orange-700',
+      action: () => navigate('/purchases')
     },
     { 
       title: 'Agregar Producto', 
