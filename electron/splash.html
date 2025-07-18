@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+<!-- <!DOCTYPE html>
 <html>
 <head>
   <meta charset="UTF-8">
@@ -82,14 +82,224 @@
 </head>
 <body>
   <div class="splash-container">
-    <div class="logo">
-      <svg viewBox="0 0 24 24">
-        <path d="M19 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.11 0 2-.9 2-2V5c0-1.1-.89-2-2-2zm-9 14l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-      </svg>
-    </div>
+  <div class="logo">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.2">
+      <circle cx="12" cy="12" r="9"/>
+      <path d="M12 6v12"/>
+      <path d="M15 9a3 3 0 1 0-6 0"/>
+      <path d="M9 15a3 3 0 1 0 6 0"/>
+      <circle cx="12" cy="12" r="2.5" fill="currentColor"/>
+    </svg>
+  </div>
     <h1>INOVA</h1>
     <p style="margin: 0; opacity: 0.8; font-size: 14px;">Sistema de Punto de Venta</p>
     <div class="loading">
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+</body>
+</html> -->
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>INOVA POS</title>
+  <style>
+    :root {
+      --primary-color: #6c5ce7;
+      --secondary-color: #a29bfe;
+      --accent-color: #00cec9;
+      --text-light: rgba(255,255,255,0.9);
+    }
+    
+    * {
+      box-sizing: border-box;
+    }
+    
+    body {
+      margin: 0;
+      padding: 0;
+      background: linear-gradient(135deg, var(--primary-color) 0%, #4834d4 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      overflow: hidden;
+      color: var(--text-light);
+    }
+    
+    .splash-container {
+      text-align: center;
+      position: relative;
+      z-index: 2;
+    }
+    
+    .logo {
+      width: 100px;
+      height: 100px;
+      background: rgba(255,255,255,0.1);
+      backdrop-filter: blur(5px);
+      border-radius: 24px;
+      margin: 0 auto 25px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.2);
+      border: 1px solid rgba(255,255,255,0.2);
+      animation: float 3s ease-in-out infinite;
+      transition: all 0.3s ease;
+    }
+    
+    .logo svg {
+      width: 50px;
+      height: 50px;
+      fill: white;
+      filter: drop-shadow(0 2px 5px rgba(0,0,0,0.1));
+    }
+    
+    h1 {
+      margin: 0 0 12px;
+      font-size: 2.2rem;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+      background: linear-gradient(to right, white, #f5f6fa);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      text-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .subtitle {
+      margin: 0;
+      opacity: 0.9;
+      font-size: 1rem;
+      font-weight: 400;
+      letter-spacing: 0.5px;
+    }
+    
+    .loading {
+      margin-top: 40px;
+      width: 100%;
+    }
+    
+    .loading-text {
+      margin-bottom: 8px;
+      font-size: 0.85rem;
+      opacity: 0.7;
+      animation: fadeInOut 2s infinite;
+    }
+    
+    .loading-bar {
+      width: 250px;
+      height: 6px;
+      background: rgba(255,255,255,0.15);
+      border-radius: 3px;
+      overflow: hidden;
+      margin: 0 auto;
+      position: relative;
+    }
+    
+    .loading-progress {
+      height: 100%;
+      background: linear-gradient(90deg, var(--accent-color), white);
+      border-radius: 3px;
+      width: 0;
+      animation: loading 2.5s cubic-bezier(0.65, 0, 0.35, 1) infinite;
+      position: relative;
+    }
+    
+    .loading-progress::after {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: linear-gradient(90deg, 
+                transparent, 
+                rgba(255,255,255,0.4), 
+                transparent);
+      animation: shine 2.5s infinite;
+    }
+    
+    /* Background elements */
+    .bg-elements {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      z-index: 1;
+    }
+    
+    .bg-circle {
+      position: absolute;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.03);
+      animation: float 15s infinite linear;
+    }
+    
+    /* Animations */
+    @keyframes float {
+      0%, 100% { transform: translateY(0); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    @keyframes loading {
+      0% { width: 0%; left: 0; }
+      50% { width: 80%; }
+      100% { width: 100%; left: 100%; }
+    }
+    
+    @keyframes shine {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    
+    @keyframes fadeInOut {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 600px) {
+      .logo {
+        width: 80px;
+        height: 80px;
+      }
+      
+      h1 {
+        font-size: 1.8rem;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Background decorative elements -->
+  <div class="bg-elements">
+    <div class="bg-circle" style="width: 300px; height: 300px; top: -100px; left: -100px;"></div>
+    <div class="bg-circle" style="width: 200px; height: 200px; bottom: -50px; right: -50px; animation-delay: 0.5s;"></div>
+  </div>
+  
+  <!-- Main content -->
+  <div class="splash-container">
+    <div class="logo">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+        <path d="M3 21h18M5 21V10l3.5-4.5L12 10l5.5-6L19 10v11" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M9 21v-6a3 3 0 0 1 6 0v6" stroke-linecap="round"/>
+        <circle cx="12" cy="6" r="1" fill="currentColor"/>
+        <circle cx="16" cy="17" r="1" fill="currentColor"/>
+        <circle cx="8" cy="17" r="1" fill="currentColor"/>
+      </svg>
+    </div>
+    <h1>INOVA</h1>
+    <p class="subtitle">Sistema de Punto de Venta Inteligente</p>
+    <div class="loading">
+      <div class="loading-text">Cargando módulos...</div>
       <div class="loading-bar">
         <div class="loading-progress"></div>
       </div>
