@@ -1142,7 +1142,7 @@ const SEARCH_PRODUCTS_QUERY = `
 
 const SEARCH_SUPPLIERS_QUERY = `
   query SearchSuppliers($search: String!, $limit: Int) {
-    searchPersonsAdvanced(search: $search, limit: $limit, isSupplier: true) {
+    searchPersonsAdvanced(search: $search, limit: $limit) {
       id
       document
       fullName
@@ -1228,7 +1228,15 @@ export default function PurchasePage() {
   // =============================================
   const [serie, setSerie] = useState('')
   const [numero, setNumero] = useState('')
-  const [emissionDate, setEmissionDate] = useState(new Date().toISOString().split('T')[0])
+    // Función para obtener la fecha local actual
+  const getLocalDate = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  const [emissionDate, setEmissionDate] = useState(getLocalDate())
   
   // Proveedor
   const [supplier, setSupplier] = useState<Person | null>(null)

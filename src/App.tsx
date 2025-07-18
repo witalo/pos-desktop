@@ -16,6 +16,8 @@ import POSPage from './pages/sales/POSPage'
 import SalesListPage from './pages/sales/SalesListPage'
 import PurchaseListPage from './pages/purchases/PurchaseListPage'
 import PurchasePage from './pages/purchases/PurchasePage'
+import ProductListPage from './pages/products/ProductListPage'
+import ProductPage from './pages/products/ProductPage'
 
 // Componente de protección de rutas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -71,11 +73,15 @@ export default function App() {
           {/* Ventas */}
           <Route path="sales" element={<SalesListPage />} />
           <Route path="pos" element={<POSPage />} />
+          <Route path="purchases" element={<PurchaseListPage />} />
+          <Route path="purchase" element={<PurchasePage />} />
           
           {/* Otras rutas futuras */}
-          <Route path="purchases" element={<PurchaseListPage />} />
-          <Route path="purchases/new" element={<PurchasePage />} />
-          <Route path="inventory" element={<div className="p-8"><h1 className="text-2xl font-bold">Inventario - En desarrollo</h1></div>} />
+          {/* <Route path="purchases" element={<PurchaseListPage />} />
+          <Route path="purchases/new" element={<PurchasePage />} /> */}
+          <Route path="products" element={<ProductListPage />} />
+          <Route path="product" element={<ProductPage />} />
+          <Route path="product/:id" element={<ProductPage />} />
           <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Reportes - En desarrollo</h1></div>} />
           <Route path="customers" element={<div className="p-8"><h1 className="text-2xl font-bold">Clientes - En desarrollo</h1></div>} />
         </Route>

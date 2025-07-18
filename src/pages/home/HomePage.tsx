@@ -11,7 +11,8 @@ import {
   ChevronRight,
   ArrowUpRight,
   ArrowDownRight,
-  ShoppingBag
+  ShoppingBag,
+  Edit
 } from 'lucide-react'
 
 export default function HomePage() {
@@ -66,11 +67,11 @@ export default function HomePage() {
       color: 'bg-gradient-to-r from-emerald-600 to-emerald-700',
       action: () => navigate('/sales')
     },
-    { 
+   { 
       title: 'Nueva Compra', 
-      icon: ShoppingBag,  // Asegúrate de importar ShoppingBag de lucide-react
+      icon: ShoppingBag,
       color: 'bg-gradient-to-r from-purple-600 to-purple-700',
-      action: () => navigate('/purchases/new')
+      action: () => navigate('/purchase')
     },
     { 
       title: 'Ver Compras', 
@@ -79,10 +80,31 @@ export default function HomePage() {
       action: () => navigate('/purchases')
     },
     { 
-      title: 'Agregar Producto', 
+      title: 'Productos', 
       icon: Package, 
       color: 'bg-gradient-to-r from-purple-600 to-purple-700',
-      action: () => navigate('/inventory')
+      action: () => navigate('/products')
+    },
+        { 
+      title: 'Producto', 
+      icon: Package, 
+      color: 'bg-gradient-to-r from-purple-600 to-purple-700',
+      action: () => navigate('/product')
+    },
+    {
+      title: 'Editar Producto', 
+      icon: Edit,
+      color: 'bg-gradient-to-r from-teal-600 to-teal-700',
+      action: () => {
+        const lastEditedId = localStorage.getItem('lastEditedProductId');
+        if (lastEditedId) {
+          navigate(`/product/${lastEditedId}`);
+        } else {
+          // Si no hay último editado, redirige a la lista
+          navigate('/products');
+          alert('Selecciona un producto para editar primero');
+        }
+      }
     },
     { 
       title: 'Reportes', 

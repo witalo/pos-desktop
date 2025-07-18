@@ -50,21 +50,23 @@ export default function DashboardLayout() {
       shortcut: 'F1',
       active: location.pathname === '/sales' || location.pathname === '/pos'
     },
-    { 
+   { 
       id: 'purchases', 
       label: 'Compras', 
       icon: ShoppingBag, 
       path: '/purchases',
       shortcut: 'F2',
-      active: location.pathname === '/purchases'
+      active: location.pathname === '/purchases' || location.pathname === '/purchase'
     },
     { 
       id: 'products', 
       label: 'Productos', 
       icon: Package, 
-      path: '/inventory',
+      path: '/products',
       shortcut: 'F3',
-      active: location.pathname === '/inventory'
+      active: location.pathname === '/products' || 
+            location.pathname === '/product' ||
+            location.pathname.startsWith('/product/')
     },
     { 
       id: 'reports', 
@@ -87,6 +89,8 @@ export default function DashboardLayout() {
         return 'Punto de Venta'
       case '/purchases':
         return 'Compras'
+      case '/purchase':
+        return 'Compra'
       case '/inventory':
         return 'Inventario de Productos'
       case '/reports':
@@ -116,6 +120,8 @@ export default function DashboardLayout() {
         return 'Registra nuevas ventas de manera rápida y eficiente'
       case '/purchases':
         return 'Control de compras y proveedores'
+      case '/purchase':
+        return 'Registra nuevas compras de manera rapida y eficiente'
       case '/inventory':
         return 'Administra tu catálogo de productos'
       case '/reports':

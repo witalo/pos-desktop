@@ -222,7 +222,15 @@ export default function POSPage() {
   const [serials, setSerials] = useState<Serial[]>([])
   const [selectedDocument, setSelectedDocument] = useState<Document | null>(null)
   const [selectedSerial, setSelectedSerial] = useState<Serial | null>(null)
-  const [emissionDate, setEmissionDate] = useState(new Date().toISOString().split('T')[0])
+  // Función para obtener la fecha local actual
+  const getLocalDate = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  const [emissionDate, setEmissionDate] = useState(getLocalDate())
   
   // Cliente
   const [customer, setCustomer] = useState<Person | null>(null)

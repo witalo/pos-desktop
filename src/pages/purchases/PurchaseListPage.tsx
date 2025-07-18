@@ -653,7 +653,17 @@ export default function PurchaseListPage() {
   const { company } = useAuthStore()
   const [purchases, setPurchases] = useState<Purchase[]>([])
   const [loading, setLoading] = useState(false)
-  const [selectedDate, setSelectedDate] = useState(new Date().toISOString().split('T')[0])
+
+// Función para obtener la fecha local actual
+  const getLocalDate = () => {
+    const now = new Date()
+    const year = now.getFullYear()
+    const month = String(now.getMonth() + 1).padStart(2, '0')
+    const day = String(now.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
+  
+  const [selectedDate, setSelectedDate] = useState(getLocalDate())
   const [searchTerm, setSearchTerm] = useState('')
   const [currentPage, setCurrentPage] = useState(1)
   const [itemsPerPage, setItemsPerPage] = useState(10)
@@ -752,7 +762,15 @@ export default function PurchaseListPage() {
     setSelectedDate(currentDate.toISOString().split('T')[0])
   }
 
-  const getTodayDate = () => new Date().toISOString().split('T')[0]
+  // const getTodayDate = () => new Date().toISOString().split('T')[0]
+    // Función para obtener la fecha de hoy correctamente
+  const getTodayDate = () => {
+    const today = new Date()
+    const year = today.getFullYear()
+    const month = String(today.getMonth() + 1).padStart(2, '0')
+    const day = String(today.getDate()).padStart(2, '0')
+    return `${year}-${month}-${day}`
+  }
   const formatCurrency = (amount: number) => `S/ ${amount.toFixed(2)}`
   const formatTime = (time: string) => time?.substring(0, 5) || ''
 
@@ -810,7 +828,7 @@ export default function PurchaseListPage() {
           </div>
           
           <button
-            onClick={() => navigate('/purchases/new')}
+            onClick={() => navigate('/purchase')}
             className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 text-white px-3 py-1.5 rounded-lg font-medium shadow-md hover:shadow-lg transition-all duration-200 flex items-center space-x-1.5 text-xs"
           >
             <Plus className="w-3.5 h-3.5" />
