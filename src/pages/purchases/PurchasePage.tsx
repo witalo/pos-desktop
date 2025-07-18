@@ -1947,8 +1947,8 @@ export default function PurchasePage() {
 
   return (
     <div className="h-full bg-slate-50 flex flex-col font-['Inter',_'system-ui',_sans-serif]">
-      {/* Header Ultra Moderno */}
-      <div className="bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 text-white px-4 py-2.5 shadow-xl">
+      {/* Header Ultra Moderno para Compras */}
+      <div className="bg-gradient-to-r from-slate-900 via-slate-800 to-slate-900 text-white px-4 py-2.5 shadow-xl">
         <div className="flex items-center justify-between">
           <div className="flex items-center space-x-3">
             <button
@@ -1962,18 +1962,18 @@ export default function PurchasePage() {
             </div>
             <div>
               <h1 className="text-lg font-bold tracking-tight">Nueva Compra</h1>
-              <p className="text-xs text-purple-300 leading-tight">{company?.denomination || 'Mi Empresa'}</p>
+              <p className="text-xs text-slate-300 leading-tight">{company?.denomination || 'Mi Empresa'}</p>
             </div>
           </div>
           <div className="flex items-center space-x-4 text-sm">
             <div className="text-right">
               <p className="font-semibold tracking-tight">{user?.firstName} {user?.lastName}</p>
-              <p className="text-xs text-purple-300">Usuario</p>
+              <p className="text-xs text-slate-300">Usuario</p>
             </div>
-            <div className="h-6 w-px bg-purple-400"></div>
+            <div className="h-6 w-px bg-slate-400"></div>
             <div className="text-right">
               <p className="font-semibold tracking-tight">{new Date().toLocaleDateString('es-PE')}</p>
-              <p className="text-xs text-purple-300 flex items-center">
+              <p className="text-xs text-slate-300 flex items-center">
                 <Clock className="w-3 h-3 mr-1" />
                 {new Date().toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
               </p>
