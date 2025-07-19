@@ -122,8 +122,10 @@ export default function DashboardLayout() {
         return 'Control de compras y proveedores'
       case '/purchase':
         return 'Registra nuevas compras de manera rapida y eficiente'
-      case '/inventory':
+      case '/products':
         return 'Administra tu catálogo de productos'
+      case '/product':
+        return 'Administra producto'
       case '/reports':
         return 'Análisis y estadísticas de tu negocio'
       case '/customers':
