@@ -1068,7 +1068,7 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { graphqlRequest } from '../../services/graphql'
-
+import SuccessDialog from '../components/SuccessDialog'
 // =============================================
 // INTERFACES
 // =============================================
@@ -1222,7 +1222,8 @@ export default function PurchasePage() {
   const { company, user } = useAuthStore()
   const igvPercent = company?.igvPercentage || 18
   const igvFactor = 1 + (igvPercent / 100)
-
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   // =============================================
   // ESTADOS
   // =============================================
@@ -1783,65 +1784,73 @@ export default function PurchasePage() {
       
       if (response.createOperation.success) {
         const operation = response.createOperation.operation
-        
+        const successMsg = `Compra ${operation.serial}-${operation.number} guardada exitosamente`
+        // Mostrar diálogo de éxito
+        setSuccessMessage(successMsg)
+        setShowSuccessDialog(true)
         // Preparar datos para impresión
-        const purchaseForPrint = {
-          id: operation.id,
-          serial: operation.serial || serie || 'S/N',
-          number: operation.number || numero || 'S/N',
-          operationDate: operationData.operationDate,
-          emitDate: operationData.emitDate,
-          emitTime: operationData.emitTime,
-          operationStatus: '2',
-          currency: operationData.currency,
-          totalAmount: operationData.totalAmount,
-          totalTaxable: operationData.totalTaxable,
-          totalUnaffected: operationData.totalUnaffected,
-          totalExempt: operationData.totalExempt,
-          totalFree: operationData.totalFree,
-          igvAmount: operationData.igvAmount,
-          igvPercent: operationData.igvPercent,
-          globalDiscount: operationData.globalDiscount,
-          globalDiscountPercent: operationData.globalDiscountPercent,
-          totalDiscount: operationData.totalDiscount,
-          person: supplier || {
-            fullName: 'PROVEEDOR GENERAL',
-            document: '00000000',
-            personType: '1'
-          },
-          user: user,
-          details: cartItems.map(item => ({
-            description: item.product.description,
-            quantity: item.quantity,
-            unitValue: item.unitValue,
-            unitPrice: item.unitPrice,
-            totalValue: item.totalValue,
-            totalIgv: item.totalIgv,
-            totalAmount: item.totalAmount,
-            product: {
-              id: item.product.id,
-              code: item.product.code,
-              description: item.product.description,
-              typeAffectation: item.product.typeAffectation,
-              unit: item.product.unit
-            }
-          })),
-          paymentSet: paymentsList || []
-        }
+        // const purchaseForPrint = {
+        //   id: operation.id,
+        //   serial: operation.serial || serie || 'S/N',
+        //   number: operation.number || numero || 'S/N',
+        //   operationDate: operationData.operationDate,
+        //   emitDate: operationData.emitDate,
+        //   emitTime: operationData.emitTime,
+        //   operationStatus: '2',
+        //   currency: operationData.currency,
+        //   totalAmount: operationData.totalAmount,
+        //   totalTaxable: operationData.totalTaxable,
+        //   totalUnaffected: operationData.totalUnaffected,
+        //   totalExempt: operationData.totalExempt,
+        //   totalFree: operationData.totalFree,
+        //   igvAmount: operationData.igvAmount,
+        //   igvPercent: operationData.igvPercent,
+        //   globalDiscount: operationData.globalDiscount,
+        //   globalDiscountPercent: operationData.globalDiscountPercent,
+        //   totalDiscount: operationData.totalDiscount,
+        //   person: supplier || {
+        //     fullName: 'PROVEEDOR GENERAL',
+        //     document: '00000000',
+        //     personType: '1'
+        //   },
+        //   user: user,
+        //   details: cartItems.map(item => ({
+        //     description: item.product.description,
+        //     quantity: item.quantity,
+        //     unitValue: item.unitValue,
+        //     unitPrice: item.unitPrice,
+        //     totalValue: item.totalValue,
+        //     totalIgv: item.totalIgv,
+        //     totalAmount: item.totalAmount,
+        //     product: {
+        //       id: item.product.id,
+        //       code: item.product.code,
+        //       description: item.product.description,
+        //       typeAffectation: item.product.typeAffectation,
+        //       unit: item.product.unit
+        //     }
+        //   })),
+        //   paymentSet: paymentsList || []
+        // }
         
         // IMPRIMIR AUTOMÁTICAMENTE
-        PrintService.printSale(purchaseForPrint, company).then(printResult => {
-          if (printResult.success) {
-            console.log('✅ Compra impresa exitosamente')
-          } else {
-            console.error('❌ Error al imprimir:', printResult.error)
-          }
-        }).catch(error => {
-          console.error('❌ Error crítico al imprimir:', error)
-        })
+        // PrintService.printSale(purchaseForPrint, company).then(printResult => {
+        //   if (printResult.success) {
+        //     console.log('✅ Compra impresa exitosamente')
+        //   } else {
+        //     console.error('❌ Error al imprimir:', printResult.error)
+        //   }
+        // }).catch(error => {
+        //   console.error('❌ Error crítico al imprimir:', error)
+        // })
         
-        alert(`Compra ${operation.serial || serie || 'S/N'}-${operation.number || numero || 'S/N'} guardada exitosamente`)
-        navigate('/purchases')
+        // alert(`Compra ${operation.serial || serie || 'S/N'}-${operation.number || numero || 'S/N'} guardada exitosamente`)
+        // navigate('/purchases')
+        // Redirigir después de cerrar el diálogo
+        setTimeout(() => {
+          setShowSuccessDialog(false)
+          navigate('/purchases')
+        }, 3000)
       } else {
         alert(`Error: ${response.createOperation.message}`)
       }
@@ -3015,6 +3024,17 @@ export default function PurchasePage() {
           </div>
         </div>
       )}
+      {/* Diálogo de Éxito */}
+      <SuccessDialog
+        isOpen={showSuccessDialog}
+        onClose={() => {
+          setShowSuccessDialog(false)
+          navigate('/purchases')
+        }}
+        title="Operación Exitosa"
+        message={successMessage}
+        autoCloseDelay={3000}
+      />
     </div>
   )
 }
