@@ -26,6 +26,7 @@ import {
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { graphqlRequest } from '../../services/graphql'
+import SuccessDialog from '../components/SuccessDialog'
 
 // =============================================
 // TIPOS E INTERFACES
@@ -212,7 +213,8 @@ export default function POSPage() {
   const { company, user } = useAuthStore()
   const igvPercent = company?.igvPercentage || 18
   const igvFactor = 1 + (igvPercent / 100)
-
+  const [showSuccessDialog, setShowSuccessDialog] = useState(false)
+  const [successMessage, setSuccessMessage] = useState('')
   // =============================================
   // ESTADOS
   // =============================================
@@ -819,13 +821,17 @@ export default function POSPage() {
   // Guardar operación
   const saveOperation = async () => {
     if (!customer) {
-      alert('Debe seleccionar un cliente')
+      // alert('Debe seleccionar un cliente')
+      setSuccessMessage('Debe seleccionar un cliente')
+      setShowSuccessDialog(true)
       customerSearchRef.current?.focus()
       return
     }
 
     if (cartItems.length === 0) {
-      alert('Debe agregar al menos un producto')
+      // alert('Debe agregar al menos un producto')
+      setSuccessMessage('Debe agregar al menos un producto')
+      setShowSuccessDialog(true)
       barcodeRef.current?.focus()
       return
     }
@@ -886,7 +892,10 @@ const processOperation = async (paymentsList: Payment[]) => {
     
     if (response.createOperation.success) {
       const operation = response.createOperation.operation
-      
+      const successMsg = `Venta ${operation.serial}-${operation.number} guardada exitosamente`
+       // Mostrar diálogo de éxito
+      setSuccessMessage(successMsg)
+      setShowSuccessDialog(true)
       // Preparar los datos de la venta para impresión
       const saleForPrint = {
         id: operation.id,
@@ -943,10 +952,14 @@ const processOperation = async (paymentsList: Payment[]) => {
       })
       
       // Mostrar mensaje de éxito y continuar
-      alert(`Venta ${operation.serial}-${operation.number} guardada exitosamente`)
+       // Redirigir después de cerrar el diálogo
+      setTimeout(() => {
+        setShowSuccessDialog(false)
+        navigate('/sales')
+      }, 3000)
       
       // Redirigir a la lista de ventas
-      navigate('/sales')
+      // navigate('/sales')
     } else {
       alert(`Error: ${response.createOperation.message}`)
     }
@@ -2211,6 +2224,17 @@ return (
       </div>
     </div>
   )}
+  {/* Diálogo de Éxito */}
+<SuccessDialog
+  isOpen={showSuccessDialog}
+  onClose={() => {
+    setShowSuccessDialog(false)
+    navigate('/sales')
+  }}
+  title="Operación Exitosa"
+  message={successMessage}
+  autoCloseDelay={3000}
+/>
 </div>
 )
 }
