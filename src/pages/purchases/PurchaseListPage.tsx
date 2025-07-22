@@ -635,17 +635,41 @@ const CANCEL_PURCHASE_MUTATION = `
     }
   }
 `
+// Definir tipos explícitos para los estados
+type OperationStatus = '1' | '2' | '3' | '4' | '5' | '6' | 'A_1' | 'A_2' | 'A_3' | 'A_4' | 'A_5' | 'A_6'
+
+// Mapeo de estados del backend a estados internos
+const STATUS_MAPPING: Record<string, string> = {
+  'A_1': '1',
+  'A_2': '2',
+  'A_3': '3',
+  'A_4': '4',
+  'A_5': '5',
+  'A_6': '6',
+  '1': '1',
+  '2': '2',
+  '3': '3',
+  '4': '4',
+  '5': '5',
+  '6': '6'
+}
 
 const STATUS_COLORS: Record<string, string> = {
-  '1': 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm',
+  '1': 'bg-gradient-to-r from-blue-500 to-blue-600 text-white shadow-sm',
   '2': 'bg-gradient-to-r from-emerald-500 to-emerald-600 text-white shadow-sm',
-  '3': 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm'
+  '3': 'bg-gradient-to-r from-amber-500 to-amber-600 text-white shadow-sm',
+  '4': 'bg-gradient-to-r from-orange-500 to-orange-600 text-white shadow-sm',
+  '5': 'bg-gradient-to-r from-red-500 to-red-600 text-white shadow-sm',
+  '6': 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-sm'
 }
 
 const STATUS_LABELS: Record<string, string> = {
-  '1': 'Borrador',
-  '2': 'Registrado',
-  '3': 'Anulado'
+  '1': 'Registrado',
+  '2': 'Emitido', 
+  '3': 'Pendiente',
+  '4': 'Proceso',
+  '5': 'Anulado',
+  '6': 'Rechazado'
 }
 
 export default function PurchaseListPage() {
@@ -680,6 +704,17 @@ export default function PurchaseListPage() {
   useEffect(() => {
     loadPurchases()
   }, [selectedDate, company?.id])
+
+  // Función para obtener el estado con tipo seguro
+  const getStatusLabel = (status: string): string => {
+    const mappedStatus = STATUS_MAPPING[status] || status
+    return STATUS_LABELS[mappedStatus] || 'Desconocido'
+  }
+
+  const getStatusColor = (status: string): string => {
+    const mappedStatus = STATUS_MAPPING[status] || status
+    return STATUS_COLORS[mappedStatus] || 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-sm'
+  }
 
   const loadPurchases = async () => {
     if (!company?.id) return
@@ -1084,8 +1119,8 @@ export default function PurchaseListPage() {
                             </td>
                             
                             <td className="px-3 py-2 whitespace-nowrap text-center hidden md:table-cell">
-                              <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${STATUS_COLORS[purchase.operationStatus] || 'bg-gradient-to-r from-gray-500 to-gray-600 text-white shadow-sm'}`}>
-                                {STATUS_LABELS[purchase.operationStatus] || 'Desconocido'}
+                              <span className={`inline-flex px-2 py-0.5 text-xs font-semibold rounded-full ${getStatusColor(purchase.operationStatus)}`}>
+                               {getStatusLabel(purchase.operationStatus)}
                               </span>
                             </td>
                             
