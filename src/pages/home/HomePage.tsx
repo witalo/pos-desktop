@@ -85,7 +85,7 @@ export default function HomePage() {
       color: 'bg-gradient-to-r from-purple-600 to-purple-700',
       action: () => navigate('/products')
     },
-        { 
+    { 
       title: 'Producto', 
       icon: Package, 
       color: 'bg-gradient-to-r from-purple-600 to-purple-700',
@@ -103,6 +103,33 @@ export default function HomePage() {
           // Si no hay último editado, redirige a la lista
           navigate('/products');
           alert('Selecciona un producto para editar primero');
+        }
+      }
+    },
+    { 
+      title: 'Pagos', 
+      icon: Package, 
+      color: 'bg-gradient-to-r from-purple-600 to-purple-700',
+      action: () => navigate('/payments')
+    },
+    { 
+      title: 'Pago', 
+      icon: Package, 
+      color: 'bg-gradient-to-r from-purple-600 to-purple-700',
+      action: () => navigate('/payment')
+    },
+    {
+      title: 'Editar Pago', 
+      icon: Edit,
+      color: 'bg-gradient-to-r from-teal-600 to-teal-700',
+      action: () => {
+        const lastEditedId = localStorage.getItem('lastEditedPaymentId');
+        if (lastEditedId) {
+          navigate(`/payment/${lastEditedId}`);
+        } else {
+          // Si no hay último editado, redirige a la lista
+          navigate('/payments');
+          alert('Selecciona un pago para editar primero');
         }
       }
     },

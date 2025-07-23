@@ -69,6 +69,16 @@ export default function DashboardLayout() {
             location.pathname.startsWith('/product/')
     },
     { 
+      id: 'payments', 
+      label: 'Pagos', 
+      icon: Package, 
+      path: '/payments',
+      shortcut: 'F6',
+      active: location.pathname === '/payments' || 
+            location.pathname === '/payment' ||
+            location.pathname.startsWith('/payment/')
+    },
+    { 
       id: 'reports', 
       label: 'Reportes', 
       icon: FileBarChart, 
@@ -91,6 +101,10 @@ export default function DashboardLayout() {
         return 'Compras'
       case '/purchase':
         return 'Compra'
+      case '/payments':
+        return 'Pagos'
+      case '/payment':
+        return 'Pago'
       case '/inventory':
         return 'Inventario de Productos'
       case '/reports':
@@ -126,6 +140,10 @@ export default function DashboardLayout() {
         return 'Administra tu catálogo de productos'
       case '/product':
         return 'Administra producto'
+      case '/payments':
+        return 'Administra tu pagos'
+      case '/payment':
+        return 'Administra pago'
       case '/reports':
         return 'Análisis y estadísticas de tu negocio'
       case '/customers':
