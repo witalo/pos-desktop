@@ -354,7 +354,74 @@ export default function POSPage() {
     window.addEventListener('keydown', handleKeyDown)
     return () => window.removeEventListener('keydown', handleKeyDown)
   }, [cartItems, customer])
+  const getCurrentDateTime = (baseDate?: string): string => {
+    const now = new Date();
+    
+    // Si se proporciona una fecha base (para crédito)
+    if (baseDate) {
+      const [year, month, day] = baseDate.split('-').map(Number);
+      const date = new Date(year, month - 1, day);
+      
+      // Mantener la hora actual
+      date.setHours(now.getHours());
+      date.setMinutes(now.getMinutes());
+      date.setSeconds(now.getSeconds());
+      
+      // Formato: YYYY-MM-DD HH:MM:SS
+      const pad = (n: number) => n.toString().padStart(2, '0');
+      return `${date.getFullYear()}-${pad(date.getMonth() + 1)}-${pad(date.getDate())} ${
+        pad(date.getHours())}:${pad(date.getMinutes())}:${pad(date.getSeconds())}`;
+    }
+    
+    // Para contado: fecha y hora actual
+    const pad = (n: number) => n.toString().padStart(2, '0');
+    return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${
+      pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+  };
+  // Función para formatear fecha y hora actual completa
+  const formatCurrentDateTime = () => {
+    const now = new Date();
+    return `${formatDate(now.toISOString().split('T')[0])} ${formatTime(now)}`;
+  };
 
+  // Función para formatear fecha en formato DD/MM/YYYY
+  const formatDate = (dateString: string) => {
+    try {
+      const [year, month, day] = dateString.split('-');
+      return `${day}/${month}/${year}`;
+    } catch (error) {
+      console.error('Error formateando fecha:', error);
+      return dateString; // Devuelve el original si hay error
+    }
+  };
+
+  // Función para formatear hora en formato HH:MM (24h)
+  const formatTime = (date: Date | string) => {
+    try {
+      const dateObj = typeof date === 'string' ? new Date(date) : date;
+      return dateObj.toLocaleTimeString('es-PE', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: false
+      });
+    } catch (error) {
+      console.error('Error formateando hora:', error);
+      return '--:--';
+    }
+  };
+
+  // Función para parsear fecha desde formato SQL (YYYY-MM-DD HH:MM:SS)
+  const parseSQLDateTime = (sqlDateTime: string): Date => {
+    try {
+      const [datePart, timePart] = sqlDateTime.split(' ');
+      const [year, month, day] = datePart.split('-').map(Number);
+      const [hours, minutes, seconds] = timePart.split(':').map(Number);
+      return new Date(year, month - 1, day, hours, minutes, seconds);
+    } catch (error) {
+      console.error('Error parseando fecha SQL:', error);
+      return new Date(); // Devuelve fecha actual como fallback
+    }
+  };
   // Navegación en listas de búsqueda
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -1044,24 +1111,25 @@ const processOperation = async (paymentsList: Payment[]) => {
     }
 
     // Crear fecha y hora actual del sistema
-    const currentDateTime = new Date()
+    // const currentDateTime = new Date()
     
     // Para pagos al contado: usar fecha de emisión + hora actual
     // Para pagos a crédito: usar fecha seleccionada + hora actual
-    const paymentBaseDate = paymentType === 'CR' ? creditPaymentDate : emissionDate
-    const paymentDateTime = new Date(paymentBaseDate)
+    // const paymentBaseDate = paymentType === 'CR' ? creditPaymentDate : emissionDate
+    // const paymentDateTime = new Date(paymentBaseDate)
     
     // Establecer la hora actual en la fecha de pago
-    paymentDateTime.setHours(currentDateTime.getHours())
-    paymentDateTime.setMinutes(currentDateTime.getMinutes())
-    paymentDateTime.setSeconds(currentDateTime.getSeconds())
-    paymentDateTime.setMilliseconds(currentDateTime.getMilliseconds())
+    // paymentDateTime.setHours(currentDateTime.getHours())
+    // paymentDateTime.setMinutes(currentDateTime.getMinutes())
+    // paymentDateTime.setSeconds(currentDateTime.getSeconds())
+    // paymentDateTime.setMilliseconds(currentDateTime.getMilliseconds())
 
     const newPayment: Payment = {
       paymentType: paymentType,
       paymentMethod: paymentMethod,
       status: 'C',
-      paymentDate: paymentDateTime.toISOString().slice(0, 19).replace('T', ' '), // Formato: YYYY-MM-DD HH:mm:ss
+      // paymentDate: paymentDateTime.toISOString().slice(0, 19).replace('T', ' '), // Formato: YYYY-MM-DD HH:mm:ss
+      paymentDate: getCurrentDateTime(paymentType === 'CR' ? creditPaymentDate : undefined),
       paidAmount: amount,
       notes: paymentNotes || undefined
     }
@@ -2019,7 +2087,7 @@ return (
                     ;(typeButton as HTMLElement)?.focus()
                   }
                 }}
-                className="w-full px-4 py-3 bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-xl text-white font-medium placeholder-white/40 focus:outline-none focus:border-white/60"
+                className="w-full px-10 py-3 bg-white/20 backdrop-blur-sm border-2 border-white/30 rounded-xl text-white font-medium placeholder-white/40 focus:outline-none focus:border-white/60"
               />
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-white/70">📅</span>
             </div>
@@ -2081,8 +2149,8 @@ return (
           <p className="text-xs text-white/50 flex items-center justify-center">
             <Clock className="w-3 h-3 mr-1" />
             {paymentType === 'CN' 
-              ? `Fecha: ${new Date(emissionDate).toLocaleDateString('es-PE')} + hora actual`
-              : `Fecha: ${new Date(creditPaymentDate).toLocaleDateString('es-PE')} + hora actual`
+              ? `Fecha y hora actual: ${formatCurrentDateTime()}`
+              : `Fecha: ${formatDate(creditPaymentDate)} + hora actual (${formatTime(new Date())})`
             }
           </p>
           
@@ -2152,7 +2220,7 @@ return (
                       {getPaymentMethodName(payment.paymentMethod)} • {payment.paymentType === 'CN' ? 'Contado' : 'Crédito'}
                     </p>
                     <p className="text-white/70 text-xs">
-                      {new Date(payment.paymentDate).toLocaleDateString('es-PE')} {new Date(payment.paymentDate).toLocaleTimeString('es-PE', { hour: '2-digit', minute: '2-digit' })}
+                      {formatDate(payment.paymentDate.split(' ')[0])} {formatTime(parseSQLDateTime(payment.paymentDate))}
                       {payment.notes && <span className="ml-2">• {payment.notes}</span>}
                     </p>
                   </div>
