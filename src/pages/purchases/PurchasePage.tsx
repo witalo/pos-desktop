@@ -996,7 +996,558 @@ export default function PurchasePage() {
           </div>
         </div>
       </div>
-       {/* Diálogo de Producto */}
+
+      <div className="flex-1 flex overflow-hidden">
+        {/* Panel Principal */}
+        <div className="flex-1 flex flex-col p-3">
+          
+          {/* Controles Superiores */}
+          <div className="bg-white rounded-lg shadow-sm p-3 mb-3 border border-slate-200">
+            <div className="flex items-center space-x-3">
+              {/* Serie y Número (Opcionales) */}
+              <div className="flex items-center space-x-2">
+                <div>
+                  <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Serie (Opcional)</label>
+                  <input
+                    ref={serieRef}
+                    type="text"
+                    value={serie}
+                    onChange={(e) => setSerie(e.target.value.toUpperCase())}
+                    placeholder="F001"
+                    className="px-2 py-1.5 w-20 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent font-medium uppercase"
+                  />
+                </div>
+                
+                <div>
+                  <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Número (Opcional)</label>
+                  <input
+                    ref={numeroRef}
+                    type="text"
+                    value={numero}
+                    onChange={(e) => setNumero(e.target.value.replace(/\D/g, ''))}
+                    placeholder="001"
+                    className="px-2 py-1.5 w-24 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
+                  />
+                </div>
+              </div>
+
+              {/* Fecha con información de zona horaria */}
+              <div>
+                <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">
+                  Fecha • <span className="text-purple-600">{getLocalTimeZone().split('/')[1]}</span>
+                </label>
+                <input
+                  ref={dateRef}
+                  type="date"
+                  value={emissionDate}
+                  onChange={(e) => {
+                    setEmissionDate(e.target.value)
+                    // Actualizar fecha de crédito si está seleccionada
+                    if (paymentType === 'CR') {
+                      setCreditPaymentDate(e.target.value)
+                    }
+                  }}
+                  min={getLocalDate()} // ✅ No permitir fechas pasadas
+                  className="px-2 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono"
+                />
+                {/* <p className="text-xs text-slate-500 mt-0.5">
+                  🕒 Hora: {formatDisplayTime(getLocalTime())}
+                </p> */}
+              </div>
+
+              {/* Proveedor */}
+              <div className="flex-1">
+                <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Proveedor (F2)</label>
+                <div className="relative">
+                  <div className="flex items-center space-x-2">
+                    <div className="relative flex-1">
+                      <input
+                        ref={supplierSearchRef}
+                        type="text"
+                        value={supplierSearch}
+                        onChange={(e) => {
+                          setSupplierSearch(e.target.value)
+                          searchSuppliers(e.target.value)
+                        }}
+                        onFocus={() => {
+                          if (supplierResults.length > 0) {
+                            setShowSupplierResults(true)
+                          }
+                        }}
+                        onBlur={() => {
+                          setTimeout(() => setShowSupplierResults(false), 200)
+                        }}
+                        placeholder="RUC/DNI o nombre..."
+                        className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent tracking-tight"
+                      />
+                      <User className="absolute left-2 top-2 w-3 h-3 text-slate-400" />
+                      
+                      {searchingSupplier && (
+                        <Loader2 className="absolute right-2 top-2 w-3 h-3 text-slate-400 animate-spin" />
+                      )}
+                    </div>
+                    
+                    {/* Botón buscar */}
+                    <button
+                      onClick={searchSupplierByDocument}
+                      disabled={searchingSupplier || !supplierSearch}
+                      className="px-2 py-1.5 bg-purple-600 text-white text-xs rounded-md hover:bg-purple-700 disabled:bg-slate-300 disabled:cursor-not-allowed transition-colors font-medium"
+                      title="Buscar por documento exacto"
+                    >
+                      <Search className="w-3 h-3" />
+                    </button>
+                  </div>
+                  
+                  {/* Resultados de proveedores */}
+                  {showSupplierResults && supplierResults.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-xl max-h-60 overflow-y-auto">
+                      {supplierResults.map((person, index) => (
+                        <div
+                          key={person.document}
+                          onClick={() => selectSupplier(person)}
+                          className={`px-3 py-2 cursor-pointer transition-all ${
+                            index === selectedSupplierIndex 
+                              ? 'bg-purple-50 border-l-4 border-purple-500' 
+                              : 'hover:bg-slate-50 border-l-4 border-transparent'
+                          }`}
+                        >
+                          <div className="font-semibold text-xs tracking-tight">{person.fullName}</div>
+                          <div className="text-xs text-slate-500 flex items-center space-x-2 mt-0.5 font-mono">
+                            <span className="font-medium">{person.personType === '6' ? 'RUC' : 'DNI'}:</span>
+                            <span>{person.document}</span>
+                            {person.address && (
+                              <>
+                                <span>•</span>
+                                <span className="truncate">{person.address}</span>
+                              </>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                  
+                  {/* Proveedor seleccionado */}
+                  {supplier && (
+                    <div className="absolute -bottom-5 left-0 text-xs text-emerald-600 flex items-center bg-emerald-50 px-2 py-0.5 rounded-md border border-emerald-200">
+                      <CheckCircle className="w-3 h-3 mr-1" />
+                      <span className="font-semibold tracking-tight">{supplier.fullName}</span>
+                      <span className="mx-1">•</span>
+                      <span className="font-mono">{supplier.document}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Búsqueda de Productos */}
+          <div className="bg-white rounded-lg shadow-sm p-3 mb-3 border border-slate-200">
+            <div className="grid grid-cols-5 gap-3">
+              {/* Código de Barras */}
+              <div className="col-span-1">
+                <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Scanner (B)</label>
+                <div className="relative">
+                  <input
+                    ref={barcodeRef}
+                    type="text"
+                    value={barcodeSearch}
+                    onChange={(e) => setBarcodeSearch(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter') {
+                        e.preventDefault()
+                        searchByBarcode(barcodeSearch)
+                      }
+                    }}
+                    placeholder="Código QR"
+                    className="w-full pl-7 pr-2 py-1.5 text-xs border-2 border-red-400 rounded-md focus:ring-2 focus:ring-red-500 focus:border-transparent bg-red-50 font-mono tracking-wider"
+                  />
+                  <Barcode className="absolute left-2 top-2 w-3 h-3 text-red-500" />
+                  {searchingProducts && barcodeSearch && (
+                    <Loader2 className="absolute right-2 top-2 w-3 h-3 text-red-500 animate-spin" />
+                  )}
+                </div>
+              </div>
+
+              {/* Búsqueda Manual */}
+              <div className="col-span-4">
+                <label className="text-xs font-medium text-slate-600 block mb-1 tracking-tight">Buscar Producto (F1)</label>
+                <div className="relative">
+                  <input
+                    ref={productSearchRef}
+                    type="text"
+                    value={productSearch}
+                    onChange={(e) => {
+                      setProductSearch(e.target.value)
+                      searchProducts(e.target.value)
+                    }}
+                    onFocus={() => {
+                      if (productResults.length > 0) {
+                        setShowProductResults(true)
+                      }
+                    }}
+                    onBlur={() => {
+                      setTimeout(() => setShowProductResults(false), 200)
+                    }}
+                    placeholder="Nombre o código del producto..."
+                    className="w-full pl-7 pr-3 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-transparent tracking-tight"
+                  />
+                  <Search className="absolute left-2 top-2 w-3 h-3 text-slate-400" />
+                  
+                  {searchingProducts && productSearch && (
+                    <Loader2 className="absolute right-2 top-2 w-3 h-3 text-slate-400 animate-spin" />
+                  )}
+                  
+                  {/* Resultados de productos */}
+                  {showProductResults && productResults.length > 0 && (
+                    <div className="absolute z-50 w-full mt-1 bg-white border border-slate-300 rounded-lg shadow-xl max-h-80 overflow-y-auto">
+                      {productResults.map((product, index) => (
+                        <div
+                          key={product.id}
+                          onClick={() => selectProduct(product)}
+                          className={`px-3 py-2.5 cursor-pointer transition-all ${
+                            index === selectedProductIndex 
+                              ? 'bg-purple-50 border-l-4 border-purple-500' 
+                              : 'hover:bg-slate-50 border-l-4 border-transparent'
+                          }`}
+                        >
+                          <div className="flex justify-between items-start">
+                            <div className="flex-1">
+                              <div className="font-semibold text-xs tracking-tight">{product.description}</div>
+                              <div className="text-xs text-slate-500 flex items-center space-x-3 mt-1">
+                                <span className="flex items-center font-mono">
+                                  <Hash className="w-3 h-3 mr-1" />
+                                  {product.code}
+                                </span>
+                                <span className="flex items-center">
+                                  <Package className="w-3 h-3 mr-1" />
+                                  Stock: {product.stock}
+                                </span>
+                                <span className="text-purple-600 font-medium">{product.typeAffectation.name}</span>
+                              </div>
+                            </div>
+                            <div className="text-right ml-4">
+                              <div className="font-bold text-sm text-purple-600 font-mono">S/ {product.unitPrice.toFixed(2)}</div>
+                              <div className="text-xs text-slate-500">c/IGV</div>
+                            </div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Tabla de Items */}
+          <div className="flex-1 bg-white rounded-lg shadow-sm overflow-hidden border border-slate-200">
+            <div className="overflow-auto h-full">
+              <table className="w-full text-xs">
+                <thead>
+                  <tr className="bg-gradient-to-r from-purple-900 via-purple-800 to-purple-900 text-white">
+                    <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Cant.</th>
+                    <th className="px-3 py-2.5 text-left text-xs font-semibold uppercase tracking-wider">Descripción</th>
+                    <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">P.U.</th>
+                    <th className="px-3 py-2.5 text-right text-xs font-semibold uppercase tracking-wider">Importe</th>
+                    <th className="px-3 py-2.5 text-center text-xs font-semibold uppercase tracking-wider w-12"></th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-slate-100">
+                  {cartItems.length === 0 ? (
+                    <tr>
+                      <td colSpan={5} className="px-6 py-16 text-center text-slate-500">
+                        <div className="flex flex-col items-center">
+                          <div className="bg-gradient-to-br from-slate-100 to-slate-200 rounded-full p-4 mb-4">
+                            <Package className="w-12 h-12 text-slate-400" />
+                          </div>
+                          <p className="text-base font-semibold tracking-tight">No hay productos agregados</p>
+                          <p className="text-xs mt-2 text-slate-400">Escanee un código QR o busque productos</p>
+                          <div className="flex items-center space-x-4 mt-4">
+                            <div className="flex items-center text-xs text-slate-500">
+                              <kbd className="px-2 py-1 bg-slate-200 rounded text-xs font-mono font-semibold">B</kbd>
+                              <span className="ml-2 font-medium">Escanear</span>
+                            </div>
+                            <div className="flex items-center text-xs text-slate-500">
+                              <kbd className="px-2 py-1 bg-slate-200 rounded text-xs font-mono font-semibold">F1</kbd>
+                              <span className="ml-2 font-medium">Buscar</span>
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                    </tr>
+                  ) : (
+                    cartItems.map((item, index) => (
+                      <tr 
+                        key={index} 
+                        className={`hover:bg-gradient-to-r hover:from-slate-50 hover:to-purple-50/30 transition-all duration-200 ${
+                          index % 2 === 0 ? 'bg-white' : 'bg-slate-50/30'
+                        }`}
+                      >
+                        <td className="px-3 py-2">
+                          <input
+                            type="number"
+                            value={item.quantity}
+                            onChange={(e) => {
+                              const value = parseInt(e.target.value) || 0
+                              updateItemQuantity(index, value)
+                            }}
+                            onFocus={(e) => e.target.select()}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') {
+                                e.preventDefault()
+                                productSearchRef.current?.focus()
+                              }
+                            }}
+                            className="w-14 px-2 py-1 text-center text-xs border border-slate-300 rounded focus:ring-2 focus:ring-purple-500 focus:border-transparent font-mono font-semibold"
+                            min="1"
+                          />
+                        </td>
+                        <td className="px-3 py-2">
+                          <div>
+                            <p className="font-semibold text-xs text-slate-900 tracking-tight leading-tight">{item.product.description}</p>
+                            <p className="text-xs text-slate-500 flex items-center mt-0.5">
+                              <span className="flex items-center font-mono">
+                                <Hash className="w-2.5 h-2.5 mr-1" />
+                                {item.product.code}
+                              </span>
+                              <span className="mx-2">•</span>
+                              <span className="text-purple-600 font-medium">{item.product.typeAffectation.name}</span>
+                            </p>
+                          </div>
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <span className="font-semibold text-xs font-mono tracking-tight">
+                            S/ {(item.unitPrice || 0).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-right">
+                          <span className="font-bold text-sm text-purple-600 font-mono tracking-tight">
+                            S/ {(item.totalAmount || 0).toFixed(2)}
+                          </span>
+                        </td>
+                        <td className="px-3 py-2 text-center">
+                          <button
+                            onClick={() => removeItem(index)}
+                            className="p-1 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Eliminar producto"
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </button>
+                        </td>
+                      </tr>
+                    ))
+                  )}
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        {/* Panel Lateral */}
+        <div className="w-80 bg-white shadow-xl flex flex-col border-l border-slate-200">
+          {/* Descuento */}
+          <div className="p-3 border-b border-slate-200 bg-gradient-to-r from-slate-50 to-slate-100">
+            <h3 className="text-xs font-bold mb-2 text-slate-700 flex items-center tracking-tight">
+              <Percent className="w-3 h-3 mr-2" />
+              Descuento Global (F3)
+            </h3>
+            <div className="flex items-center space-x-1 mb-2">
+              <button
+                onClick={() => setDiscountType('amount')}
+                className={`flex-1 py-1 text-xs rounded-md font-semibold transition-all ${
+                  discountType === 'amount'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                }`}
+              >
+                S/ Monto
+              </button>
+              <button
+                onClick={() => setDiscountType('percent')}
+                className={`flex-1 py-1 text-xs rounded-md font-semibold transition-all ${
+                  discountType === 'percent'
+                    ? 'bg-purple-600 text-white shadow-sm'
+                    : 'bg-slate-200 text-slate-700 hover:bg-slate-300'
+                }`}
+              >
+                % Porcentaje
+              </button>
+            </div>
+            <input
+              ref={discountInputRef}
+              type="number"
+              value={globalDiscount}
+              onChange={(e) => setGlobalDiscount(Number(e.target.value) || 0)}
+              onFocus={(e) => e.target.select()}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter') {
+                  e.preventDefault()
+                  saveOperation()
+                }
+              }}
+              placeholder={discountType === 'amount' ? '0.00' : '0'}
+              className="w-full px-2 py-1.5 text-xs border border-slate-300 rounded-md focus:ring-2 focus:ring-purple-500 font-mono"
+            />
+          </div>
+
+          {/* Totales */}
+          <div className="flex-1 p-3 space-y-2 text-xs">
+            <h3 className="font-bold mb-2 text-slate-700 flex items-center tracking-tight">
+              <Calculator className="w-3 h-3 mr-2" />
+              Resumen de Compra
+            </h3>
+            
+            {/* Subtotal */}
+            <div className="flex justify-between pb-2 border-b border-slate-200">
+              <span className="text-slate-600 font-medium">Subtotal:</span>
+              <span className="font-bold font-mono">S/ {(totals.subtotal || 0).toFixed(2)}</span>
+            </div>
+
+            {/* Tipos de operación detallados */}
+            <div className="space-y-1">
+              {/* Op. Gravada */}
+              <div className="flex justify-between text-xs">
+                <span className="text-slate-500">Op. Gravada:</span>
+                <span className="text-slate-700 font-mono">S/ {(totals.totalTaxable || 0).toFixed(2)}</span>
+              </div>
+              
+              {totals.totalExempt > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">Op. Exonerada:</span>
+                  <span className="text-slate-700 font-mono">S/ {(totals.totalExempt || 0).toFixed(2)}</span>
+                </div>
+              )}
+              {totals.totalUnaffected > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">Op. Inafecta:</span>
+                  <span className="text-slate-700 font-mono">S/ {(totals.totalUnaffected || 0).toFixed(2)}</span>
+                </div>
+              )}
+              {totals.totalFree > 0 && (
+                <div className="flex justify-between text-xs">
+                  <span className="text-slate-500">Op. Gratuita:</span>
+                  <span className="text-slate-700 font-mono">S/ {(totals.totalFree || 0).toFixed(2)}</span>
+                </div>
+              )}
+            </div>
+
+            {/* IGV */}
+            <div className="flex justify-between pt-2 border-t border-slate-200">
+              <span className="text-slate-600 font-medium">IGV ({igvPercent}%):</span>
+              <span className="font-bold font-mono">S/ {(totals.totalIgv || 0).toFixed(2)}</span>
+            </div>
+
+            {/* Descuento */}
+            {totals.discountAmount > 0 && (
+              <div className="flex justify-between text-red-600 bg-red-50 px-2 py-1 rounded-md border border-red-200">
+                <span className="font-semibold">Descuento:</span>
+                <span className="font-bold font-mono">- S/ {(totals.discountAmount || 0).toFixed(2)}</span>
+              </div>
+            )}
+
+            {/* Total */}
+            <div className="flex justify-between pt-3 border-t-2 border-slate-300 text-lg font-bold">
+              <span className="tracking-tight">TOTAL:</span>
+              <span className="text-purple-600 font-mono tracking-tight">S/ {(totals.totalAmount || 0).toFixed(2)}</span>
+            </div>
+
+            {/* Información adicional con timestamp */}
+            <div className="mt-3 p-2 bg-gradient-to-br from-purple-50 to-purple-100 rounded-lg border border-purple-200">
+              <div className="text-xs text-purple-700 space-y-1">
+                <div className="flex items-center">
+                  <span className="font-semibold">Items:</span>
+                  <span className="ml-2 font-mono">{cartItems.length}</span>
+                </div>
+                <div className="flex items-center">
+                  <span className="font-semibold">Unidades:</span>
+                  <span className="ml-2 font-mono">{cartItems.reduce((acc, item) => acc + item.quantity, 0)}</span>
+                </div>
+                <div className="flex items-center justify-between pt-1 border-t border-purple-200">
+                  <span className="font-semibold text-xs">🕒 Hora:</span>
+                  <span className="ml-2 font-mono text-xs">{formatDisplayTime(getLocalTime())}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Botones */}
+          <div className="p-3 border-t border-slate-200 space-y-2">
+            <button
+              onClick={saveOperation}
+              disabled={processing || cartItems.length === 0}
+              className={`w-full py-2.5 font-bold rounded-lg transition-all flex items-center justify-center text-sm tracking-tight ${
+                processing || cartItems.length === 0
+                  ? 'bg-slate-300 text-slate-500 cursor-not-allowed'
+                  : 'bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800 text-white shadow-md hover:shadow-lg transform hover:-translate-y-0.5'
+              }`}
+            >
+              {processing ? (
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  Procesando...
+                </>
+              ) : (
+                <>
+                  <CreditCard className="w-4 h-4 mr-2" />
+                  Procesar Compra (F12)
+                </>
+              )}
+            </button>
+
+            <button
+              onClick={() => {
+                if (cartItems.length > 0 && confirm('¿Está seguro de cancelar la compra actual?')) {
+                  setCartItems([])
+                  setSupplier(null)
+                  setSupplierSearch('')
+                  setGlobalDiscount(0)
+                  barcodeRef.current?.focus()
+                }
+              }}
+              className="w-full py-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors font-semibold text-sm tracking-tight"
+            >
+              Cancelar Compra
+            </button>
+          </div>
+
+          {/* Atajos con información de hora */}
+          <div className="p-2 bg-gradient-to-r from-slate-50 to-slate-100 text-xs text-slate-600 space-y-1 border-t border-slate-200">
+            <div className="font-bold mb-1 text-slate-700 tracking-tight flex items-center justify-between">
+              <span>Atajos de Teclado:</span>
+              <span className="text-xs text-slate-500 font-mono">{getLocalTimeZone().split('/')[1]}</span>
+            </div>
+            <div className="grid grid-cols-2 gap-x-2 gap-y-1">
+              <div className="flex items-center">
+                <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">B</kbd>
+                <span className="ml-2 font-medium">Scanner</span>
+              </div>
+              <div className="flex items-center">
+                <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F1</kbd>
+                <span className="ml-2 font-medium">Productos</span>
+              </div>
+              <div className="flex items-center">
+                <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F2</kbd>
+                <span className="ml-2 font-medium">Proveedor</span>
+              </div>
+              <div className="flex items-center">
+                <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F3</kbd>
+                <span className="ml-2 font-medium">Descuento</span>
+              </div>
+              <div className="col-span-2 flex items-center mt-1">
+                <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">F12</kbd>
+                <span className="ml-2 font-medium">Procesar Compra</span>
+              </div>
+              <div className="col-span-2 flex items-center">
+                <kbd className="px-1 py-0.5 bg-white border border-slate-300 rounded text-xs font-mono font-bold">ESC</kbd>
+                <span className="ml-2 font-medium">Cerrar listas</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Diálogo de Producto */}
       {showProductDialog && editingProduct && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50 backdrop-blur-sm">
           <div className="bg-white rounded-xl p-6 max-w-md w-full shadow-2xl border border-slate-200">

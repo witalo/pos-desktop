@@ -202,13 +202,16 @@ export default function PaymentPage() {
     try {
       const { payment } = await graphqlRequest(GET_PAYMENT_BY_ID_QUERY, { id: parseInt(id) })
       if (payment) {
+        // Manejar la fecha correctamente (considerando zona horaria local)
+        const paymentDate = new Date(payment.paymentDate);
+        const formattedDate = formatLocalDate(paymentDate);
         setFormData({
           type: payment.type,
           paymentType: payment.paymentType,
           paymentMethod: payment.paymentMethod,
           status: payment.status,
           notes: payment.notes || '',
-          paymentDate: payment.paymentDate.split(' ')[0], // Tomar solo la fecha
+          paymentDate: formattedDate,
           totalAmount: payment.totalAmount,
           paidAmount: payment.paidAmount,
           installments: []
@@ -223,7 +226,13 @@ export default function PaymentPage() {
       setLoading(false)
     }
   }
-
+  // Función para formatear la fecha en formato YYYY-MM-DD (local)
+  const formatLocalDate = (date: Date) => {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+  };
   // =============================================
   // FUNCIONES AUXILIARES
   // =============================================
@@ -253,8 +262,10 @@ export default function PaymentPage() {
     return Object.keys(newErrors).length === 0
   }
 
-  const formatCurrency = (amount: number) => {
-    return `S/ ${amount.toFixed(2)}`
+  const formatCurrency = (amount: number | string) => {
+    // Convertir a número si es string
+    const numericAmount = typeof amount === 'string' ? parseFloat(amount) || 0 : amount;
+    return `S/ ${numericAmount.toFixed(2)}`;
   }
 
   const handleAmountChange = (value: string) => {
