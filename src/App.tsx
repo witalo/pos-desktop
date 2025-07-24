@@ -20,6 +20,7 @@ import ProductListPage from './pages/products/ProductListPage'
 import ProductPage from './pages/products/ProductPage'
 import PaymentListPage from './pages/payments/PaymentListPage'
 import PaymentPage from './pages/payments/PaymentPage'
+import ReportPage from './pages/reports/ReportsPage'
 
 // Componente de protección de rutas
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -83,7 +84,7 @@ export default function App() {
           <Route path="/payments" element={<PaymentListPage />} />
           <Route path="/payment" element={<PaymentPage />} />
           <Route path="payment/:id" element={<PaymentPage />} />
-          <Route path="reports" element={<div className="p-8"><h1 className="text-2xl font-bold">Reportes - En desarrollo</h1></div>} />
+          <Route path="reports" element={<ReportPage />} />
           <Route path="customers" element={<div className="p-8"><h1 className="text-2xl font-bold">Clientes - En desarrollo</h1></div>} />
         </Route>
         
