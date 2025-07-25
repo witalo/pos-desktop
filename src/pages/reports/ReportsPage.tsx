@@ -242,12 +242,26 @@ export default function ReportPage() {
     return `S/ ${amount.toFixed(2)}`
   }
 
+  // const formatDate = (dateString: string | null | undefined) => {
+  //   if (!dateString) return '-'
+  //   const date = new Date(dateString)
+  //   return date.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
+  // }
   const formatDate = (dateString: string | null | undefined) => {
     if (!dateString) return '-'
+    
+    // Crear fecha en UTC y ajustar a Lima (UTC-5)
     const date = new Date(dateString)
-    return date.toLocaleDateString('es-PE', { day: '2-digit', month: 'short' })
+    const limaOffset = -5 * 60 // Lima es UTC-5
+    const localOffset = date.getTimezoneOffset()
+    const limaTime = new Date(date.getTime() + (localOffset - limaOffset) * 60 * 1000)
+    
+    return limaTime.toLocaleDateString('es-PE', { 
+      day: '2-digit', 
+      month: 'short',
+      timeZone: 'America/Lima'
+    })
   }
-
   const getMonthName = (month: number) => {
     const months = ['Enero', 'Febrero', 'Marzo', 'Abril', 'Mayo', 'Junio', 
                    'Julio', 'Agosto', 'Septiembre', 'Octubre', 'Noviembre', 'Diciembre']
