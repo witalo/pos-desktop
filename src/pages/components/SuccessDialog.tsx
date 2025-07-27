@@ -1,5 +1,5 @@
 
-import React, { useEffect, useRef } from 'react'
+import { useEffect, useRef } from 'react'
 import { CheckCircle, X } from 'lucide-react'
 
 interface SuccessDialogProps {

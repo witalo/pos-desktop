@@ -1,13 +1,11 @@
 // src/pages/payments/PaymentPage.tsx
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { 
   ArrowDownCircle,
   ArrowUpCircle,
   Calendar,
   Clock,
-  DollarSign,
-  FileText,
   Save,
   X,
   Banknote,
@@ -19,11 +17,7 @@ import {
   Calculator,
   Plus,
   Trash2,
-  ChevronRight,
-  Edit3,
-  Hash,
-  CalendarDays,
-  Check
+  ChevronRight
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { graphqlRequest } from '../../services/graphql'

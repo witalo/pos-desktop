@@ -1,6 +1,6 @@
 // src/components/PDFViewerModal.tsx
 import { useState, useEffect, useRef } from 'react'
-import { FileText, Printer, FileDown, Mail, X, Loader2, Settings, Monitor, Download } from 'lucide-react'
+import { FileText, Printer, FileDown, Mail, X, Loader2, Settings, Monitor } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
 import { graphqlRequest } from '../../services/graphql'
 import InvoicePDF from './InvoicePDF'

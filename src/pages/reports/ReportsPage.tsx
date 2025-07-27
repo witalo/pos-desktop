@@ -674,7 +674,7 @@ export default function ReportPage() {
                     <YAxis tick={{ fontSize: 10 }} />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                        backgroundColor: 'rgba(221, 218, 45, 0.95)', 
                         border: '1px solid #e2e8f0',
                         borderRadius: '8px',
                         fontSize: '12px'
@@ -745,7 +745,7 @@ export default function ReportPage() {
                   <h3 className="text-sm font-bold text-slate-700">Top 5 Productos Más Vendidos</h3>
                   <Package className="w-4 h-4 text-slate-400" />
                 </div>
-                <ResponsiveContainer width="100%" height={250}>
+                <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={getTopProductsData()}>
                     <defs>
                       <linearGradient id="colorBar" x1="0" y1="0" x2="0" y2="1">
@@ -753,12 +753,12 @@ export default function ReportPage() {
                         <stop offset="100%" stopColor="#1D4ED8" stopOpacity={1}/>
                       </linearGradient>
                     </defs>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <CartesianGrid strokeDasharray="3 3" stroke="#1560ebff" />
                     <XAxis dataKey="name" tick={{ fontSize: 10 }} angle={-45} textAnchor="end" height={80} />
                     <YAxis tick={{ fontSize: 10 }} />
                     <Tooltip 
                       contentStyle={{ 
-                        backgroundColor: 'rgba(255, 255, 255, 0.95)', 
+                        backgroundColor: 'rgba(224, 228, 6, 0.95)', 
                         border: '1px solid #e2e8f0',
                         borderRadius: '8px',
                         fontSize: '12px'

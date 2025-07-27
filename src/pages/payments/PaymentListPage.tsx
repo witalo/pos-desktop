@@ -25,9 +25,7 @@ import {
   CreditCard,
   Smartphone,
   Building2,
-  Hash,
   Edit3,
-  MoreVertical,
   Calculator
 } from 'lucide-react'
 import { useAuthStore } from '../../store/authStore'
