@@ -1,5 +1,5 @@
 {
-  "name": "pos-desktop",
+  "name": "Inova",
   "version": "1.0.0",
   "description": "Sistema de Punto de Venta Desktop",
   "main": "electron/main.js",
@@ -20,8 +20,8 @@
     "postinstall": "electron-builder install-app-deps"
   },
   "build": {
-    "appId": "com.tuempresa.pos",
-    "productName": "POS Desktop",
+    "appId": "com.inova.pos",
+    "productName": "Inova",
     "directories": {
       "output": "release",
       "buildResources": "build"
